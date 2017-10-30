@@ -336,7 +336,8 @@ The following list are additional functions for ``Linear.Prelude``:
 
   ::
 
-    lseq0 :: () ⊸ b ⊸ b lseq0 () b = b
+    lseq0 :: () ⊸ b ⊸ b
+    lseq0 () b = b
 
   This is a common enough idiom to deserve its own ``Linear.Prelude``
   function. For convenience, let us generalise a ``Dropable``
