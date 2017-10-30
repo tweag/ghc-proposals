@@ -94,6 +94,7 @@ array. As a consequence mutations cannot be observed by the
 context. Referencial transparency is preserved.
 
 There are a number of benefits to this API
+
 - falling in the category of making more things pure: reads and writes
   on distinct arrays are not sequenced. This means that the compiler
   is free to find better optimisation. We could go further and and
@@ -164,6 +165,7 @@ unrestricted function is said to have multiplicity ``ω``. Multiplicity
 polymorphic function may have variable multiplicity, *e.g.*
 
 ::
+
   map :: (a ->: p b) -> [a] ->: p [b]
 
 Syntax
@@ -178,14 +180,18 @@ indexed arrow.
 - Multiplicity literal are lexically distinct from type constants to
   avoid collisions. Literals starting with the character ``~`` are
   multiplicity literals
+
   - Multiplicity ``1`` is written ``~1``
   - Multiplicity ``ω`` is written ``~u`` (for unrestricted) in ASCII
     syntax, and ``~ω`` in Unicode syntax
+
 - Multiplicity variables are type variables of kind ``Multiplicity``.
 - We will also need to write sums and products of multiplicities (see
   formalism below)
+
   - ``p ~+ q``
   - ``p ~* q``
+
 - The multiplicity annotated arrow is written ``a ->: p q``. The type
   constructor is ``(->: p)`` for each multiplicity ``p``.
 - In addition, in type annotations in binders, the ``::`` be followed
@@ -194,6 +200,7 @@ indexed arrow.
   type ``A ->: ~u A`` (*i.e.* ``A->A``).
 
 The linear and unrestricted arrows are aliases:
+
 - ``(->)`` is an alias for ``(->: ~u)``
 - ``(->.)`` (ASCII syntax) and ``(⊸)`` (Unicode syntax) are aliases
   for ``(->: ~1)``
@@ -209,6 +216,7 @@ Constructors & pattern-matching
 Constructors of data types defined with the Haskell 98 syntax
 
 ::
+
   data Foo
     = Bar A B
     | Baz C
@@ -221,6 +229,7 @@ linear constructors.
 With the GADT syntax, multiplicity of the arrows is honored:
 
 ::
+
   data Foo2 where
     Bar2 :: A ⊸ B -> C
 
@@ -236,6 +245,7 @@ as linear variables, and unrestricted fields as unrestricted
 variables:
 
 ::
+
   f :: Foo2 ⊸ A
   f (Bar2 x y) = x  -- y is unrestricted, hence does not need to be consumed
 
@@ -265,6 +275,7 @@ Familiar functions with a new type
 
 Here are functions from ``base`` which are exported in the ``Linear``
 namespace, with their types:
+
 - ``($) :: (a ->: p q) -> a ->: p q``
 - ``const :: a ⊸ b -> b``
 - ``swap :: (a,b) ⊸ (b,a)``
@@ -297,6 +308,7 @@ The following list are additional functions for ``Linear.Prelude``:
   head normal form)
 - A few type classes help navigate between the unrestricted and
   restricted world
+
   - ``class Dropable a where { drop :: a ⊸ () }``
   - ``class Dropable a => Dupable a where { dup :: a ⊸ (a,a) }``
     - The laws of the ``Dupable`` class are duals to those of monoid
@@ -316,11 +328,13 @@ The following list are additional functions for ``Linear.Prelude``:
       Int# -> Int }`` (*i.e.* a linear variable of type ``Int``
       contains an unrestricted ``Int#``). But it may also make sense
       to export enough primitive to make ``Int#`` movable.
+
 - As mentioned above, ``seq`` is not linear in its first argument. But
   it is easy to define a variant that is, only it requires the first
   argument to be of type ``()``
 
   ::
+
     lseq0 :: () ⊸ b ⊸ b lseq0 () b = b
 
   This is a common enough idiom to deserve its own ``Linear.Prelude``
@@ -328,6 +342,7 @@ The following list are additional functions for ``Linear.Prelude``:
   argument:
 
   ::
+
     lseq :: Dropable a => a ⊸ b ⊸ b
     lseq a b = lseq0 (drop a) b
 
@@ -343,6 +358,7 @@ it convenient to work with, we introduce in ``Linear.IO`` an ``IO``
 type in which the multiplicity can vary
 
 ::
+
   data IORes (p :: Multiplicity) a where  -- it should really be an unboxed pair
     IORes :: State# RealWorld ⊸ a ->: p IORes p a
   type IO p a = State# RealWorld ⊸ IORes p a
@@ -351,6 +367,7 @@ This ``IO`` type does not form a monad, as the multiplicity may change
 at every bind, but it fits the following pattern:
 
 ::
+
   class MMonad m where
     return :: a ->:p m p a
     (>>=) :: m p a ⊸ (a ->: p m q b) ⊸ m q b
@@ -361,6 +378,7 @@ variants to add below this monad-like class?
 The ``Foldable`` type class is generalised in ``Linear.Data.Foldable``
 
 ::
+
   class Foldable (p :: Multiplicity) (q :: Multiplicity) t where
     foldr :: (a ->: p b ->: q b) -> b ->: q t a ->: p b
 
@@ -409,12 +427,14 @@ to infer the multiplicity in the type of functions.
 In order to cope with the fact that
 
 ::
+
   fst :: (a, b) -> a
   fst (a, _) = a
 
 is well-typed but
 
 ::
+
   fst :: (a, b) ⊸ a
   fst (a, _) = a
 
@@ -472,6 +492,7 @@ considered distracting.
 There is a an issue that defining newtypes such as
 
 ::
+
   newtype Unrestricted' a where
     Unrestricted' :: a -> Unrestricted' a
 
@@ -497,6 +518,7 @@ sense to go for the simplest one.
 In this proposal
 
 ::
+
   f :: A ⊸ B
 
   g :: A -> B
@@ -508,6 +530,7 @@ converted to linear types). So the type inference mechanism elaborates
 this program to the well-typed η-expansion
 
 ::
+
   f :: A ⊸ B
 
   g :: A -> B
