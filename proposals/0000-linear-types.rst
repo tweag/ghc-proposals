@@ -482,31 +482,158 @@ consumed.
 Alternatives
 ------------
 
-List existing alternatives to your proposed change as they currently
-exist and discuss why they are insufficient.
+Subtyping instead of polymorphism
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-- No annotated case (simpler multiplicity application, but much less
-  polymorphism)
-- Unicity
-  - Better with freeze a list of array (this issue is exacerbated when
-    freezing an array of array)
-  - Would inform a non-aliasing analysis instead of the cardinality analysis
-  - Significantly more complex
-- Having linearity-in-the-kind
-  - Polymorphism in the same way as we do levity polymorphism
-  - Many types will have to live in both words (no clear path to that,
-    or very little polymorphism)
-  - Doesn't solve the freeze issue (even with no native way to promote )
-  - CPS interfaces have the benefit of being able to handle exceptions
-  - The only way I know to do dependent type with it (if dependent
-    Haskell eventually exists) is to disallow linear things from being
-    dependent arguments
-- Subtyping instead of polymorphism
+Since ``A ⊸ B`` is a strengthening of ``A -> B``, it is tempting to
+make ``A ⊸ B`` a subtype of ``A -> B``. But subtyping and polymorphism
+don't mesh very well, and would yield a significantly more complex
+solution.
+
+In general, subtyping and polymorphism are not comparable, and some
+examples will work better with one or the other. Therefore it makes
+sense to go for the simplest one.
+
+In this proposal
+
+::
+  f :: A ⊸ B
+
+  g :: A -> B
+  g = f
+
+is, in theory, ill-typed. But it would be a problem to reject this
+program (especially with all the constructors which have been
+converted to linear types). So the type inference mechanism elaborates
+this program to the well-typed η-expansion
+
+::
+  f :: A ⊸ B
+
+  g :: A -> B
+  g x = f x
+
+No annotation on case
+~~~~~~~~~~~~~~~~~~~~~
+
+Instead of having ``case_p`` we could just have the regular ``case``
+(which would correspond to ``case_1`` in this proposal's
+formalism). This simplify the implementation of polymorphism as we
+can't risk writing ``case_0``.
+
+On the other hand, doing this loses the principle that linear data
+types and unrestricted data types are one and the same. And sacrifices
+much code reuse.
+
+Unicity instead of linearity
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Languages like Clean and Rust have a variant of linear types called
+uniqueness, or ownership, typing. This is a dual notion: instead of
+functions guaranteeing that they use their argument exactly once, and
+no restriction being imposed on the caller, with uniqueness type, the
+caller must guarantee that it has a non-aliased reference to a value,
+and the function has no restriction.
+
+Where unicity really shines, is for in-place mutation: the ``write``
+function can take a regular ``Array`` as an argument, it just needs to
+require that it is unique. Freezing is really easy: just drop the
+constraint that the ``Array`` is unique, it will never be writable
+again.
+
+With linear types, we need to have two types ``MArray`` (guaranteed
+unique) and ``Array``, just like in Haskell today. This is fine when
+we are freezing one array: just call ``freeze``. But what if we are
+freezing a list of arrays? Do we need to ``map freeze``? This is
+unfortunate (the problem is even more complicated if we start
+considering ``MArray (MArray a)``). It has a feel of ``Coercible``,
+but it does feel harder.
+
+On the other hand, other examples work better with linear types, such
+as fork-join parallelism. This is why Rust has a notion of so-called
+mutable borrowed reference, on which constraints are more akin to
+linear types (or rather, affine types, technically).
+
+Overall, uniqueness type system are significantly more complex to
+specify and implement than linear types systems such as this
+proposal's.
+
+Linearity-in-kinds
+~~~~~~~~~~~~~~~~~~
+
+Instead of adding a type for linear function, we could classify types
+in two kinds: one of unrestricted types and one of linear
+types. A value of a linear type must be used in a linear fashion.
+
+This would get rid of the continuation of ``newMArray`` in the
+motivating ``MArray`` interface.
+
+The most natural way to do this, in Haskell, is to add a second
+parameter to ``TYPE`` (the first one is for levity polymorphism). So,
+ignoring the levity polymorphism, we would have ``TYPE ~1`` for linear
+types and ``TYPE ~ω`` for unrestricted type. We get polymorphism by
+abstracting over the multiplicity.
+
+As interesting as it is, there is quite some complication associated
+to it. First, because of laziness, you can't have a function of type
+``(A :: TYPE ~1) -> (B :: TYPE ~ω)`` (because you don't need to
+consume the result, hence you may not consume an argument that you
+have to consume). So what would be the type of the arrow? Something
+like ``forall (p :: Multiplicity) (q ⩽ p). p -> q -> q``. So we're
+introducing some kind of bounded polymorphism in our story. This is
+quite a bit harder than our proposal.
+
+Most types will live in both kinds, but that would have to be
+explicit:
+
+::
+
+  data List (p :: Multiplicity) (a :: TYPE p) :: TYPE p where
+    [] :: List p a
+    (:) :: a -> List p a -> List p a
+
+Mixing non-linear and linear lists (*e.g.* with ``(++)``) would
+require either some subtyping from ``List ~ω a`` to ``List ~1 a`` (but
+as discussed above, subptyping in presence of polymorphism quickly
+becomes hairy) or some conversion function.
+
+It it worth taking into account that the issues with ``MArray`` and
+``Array`` (which may be ``Array ~1`` and ``Array ~ω`` in this case)
+above are not solved by such a situation. Unless there is a subptyping
+relation from ``Array ~ω`` from ``Array ~1``, which cannot be performed
+by an explicit function since this would be equivalent to the
+proposal's situation.
+
+On the other hand, the CPS interface to ``newMArray`` delimits a scope
+in which the array lives. This gives a perfect opportunity to put
+clean-up code to react to exceptions. So it may not be such a bad thing
+after all.
+
+So linearity in kind seem to add a lot of complication for very little
+gain.
+
+On the matter of dependent Haskell, to the best our knowledge, the only
+presentations of dependent types with linearity-in-kinds disallow
+linear types as arguments of dependent functions.
 
 Future work
 ~~~~~~~~~~~
 
-- Toplevel linear binders
+Something that hasn't been touched up by this proposal is the idea of
+declaring toplevel linear binders
+
+::
+
+  module Foo where
+  token :: ~1 A
+
+Here ``token`` would have be consumed exactly once by the program,
+this property is a link-time property. This generalised the
+``RealWorld`` token which is currently magically inserted in the
+``main`` function (the existence of which is checked at link time).
+
+This would allow libraries to abstract on ``main`` or to provide their
+own linearly-threaded token.
 
 Unresolved questions
 --------------------
