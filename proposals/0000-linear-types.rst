@@ -265,19 +265,21 @@ Remark: ``let`` binders are decorated like ``case``, with the restriction that r
 
 Effect and Interactions
 -----------------------
-Detail how the proposed change addresses the original problem raised in the motivation.
 
-Discuss possibly contentious interactions with existing language or compiler features.
+A staple of this proposal is that it does not modify Haskell for those who don't want to use it, or don't know of linear types. Even if an API exports linear types, they are easy to ignore: just imagine that the arrows are regular arrows, it will work as expected.
 
-- ``-XRebindableSyntax`` renders ``if`` useless
+Linear data types are just regular Haskell type, which means its cheap to get interact with existing libraries.
 
+There is one known unpleasant interaction: with ``-XRebindableSyntax``, ``if u then t else e`` is interpreted as ``ifThenElse u t e``. Unfortunately, these two construct have differrent typing rules when ``t`` and ``e`` have free linear variables. Therefore well-typed linearly typed programs can stop typing when ``-XRebindableSyntax`` is added.
 
 Costs and Drawbacks
 -------------------
+
 Give an estimate on development and maintenance costs. List how this effects learnability of the language for novice users. Define and list any remaining drawbacks that cannot be resolved.
 
-- Exceptions
-- What's this weird `->.`
+This proposal tries hard to make the changes invisible to newcomers, however, if many libraries start adopting it, the new function types will appear in APIs. They can be safely ignore, but they can still be considered distracting.
+
+On the implementation side, there is a an issue that defining newtypes such as ``newtype Unrestricted where {}``
 - ``newtype Unrestricted …`` must be prohibited
 
 Alternatives
