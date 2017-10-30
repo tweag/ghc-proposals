@@ -440,9 +440,15 @@ however, if many libraries start adopting it, the new function types
 will appear in APIs. They can be safely ignore, but they can still be
 considered distracting.
 
-On the implementation side, there is a an issue that defining newtypes
-such as ``newtype Unrestricted where {}``
-- ``newtype Unrestricted …`` must be prohibited
+There is a an issue that defining newtypes such as
+
+::
+  newtype Unrestricted' a where
+    Unrestricted' :: a -> Unrestricted' a
+
+Because of laziness which could cause linear values not to be
+consumed.
+
 
 Alternatives
 ------------
