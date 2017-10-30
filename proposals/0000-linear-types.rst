@@ -32,22 +32,51 @@ To get hyperlinks, use backticks, angle brackets, and an underscore `like this <
 Linear Types
 ============
 
-This proposal adds a notion of *linear function* to Haskell. Linear
-functions are regular functions which guarantee that they will use
-their argument exactly once. Whether a function ``f`` is linear or not
-is called the *multiplicity* of ``f``. This proposal also include
-multiplicity polymorphism. Further details and examples can be found
-in the `companion article <https://arxiv.org/abs/1710.09756>`_.
+This proposal introduces a notion of *linear function* to GHC.
+Linear functions are regular functions, which guarantee that they will
+use their argument exactly once. Whether a function ``f`` is linear or
+not is called the *multiplicity* of ``f``. We propose a new language
+extension, ``-XLinearTypes``. When turned on, the user can enforce
+a given multiplicity for ``f`` using a type annotation.
+
+The theory behind this proposal has been fully developed in a peer
+reviewed conference publication that will be presented at POPL'18. See
+the `extended version of the paper
+<https://arxiv.org/abs/1710.09756>`_.
 
 Motivation
-------------
+----------
 
-Linear function make it possible to encode invariants which are
-inaccessible without them. They tend to fall into two categories:
-"making more things pure" and "typestate".
+Haskell, along with a few other languages, heralded the notion of
+*type safety* into mainstream programming. That is, *well-typed
+programs do not go wrong*. Well-typed programs do sometimes crash, or
+fail to terminate, but they do not segfault. But the system resources
+that these programs manipulate have changing states, need to be
+initialized before use and conversely, must be freed in a timely
+manner. We want not just type safety in Haskell, but also *resource
+safety*. We want well-typed programs that do not go wrong in the sense
+that they might still crash, but they do not rewind the state of I/O
+resources, these resources are never used before they are initialized,
+are guaranteed to be freed by the time control flow exits user defined
+scopes, and never used after being freed.
 
-A fairly typical example is a pure API for mutable array (the type ``a
-⊸ b`` is the type of linear functions, ``Unrestricted`` is such that
+This proposal hits another goal as a side benefit. In Haskell, impure
+computations are typically structured as a sequence of steps, be it in
+the ``IO`` monad or in ``ST``. The latter in particular serves to
+precisely control which effects are possible and the scope within
+which they are visible. But using monads to write "locally impure"
+computations that still look pure from the outside has an unfortunate
+consequence: computations are oversequentialized, making it hard for
+the compiler to recover lost opportunities for parallelism.
+
+Linear types enable better solutions to both problems: using types to
+guarantee resource safety, and using types to control the scope of
+effects without forcing an unnatural sequencing of mutually
+independent effects.
+
+The following example illustrates both points. Using linear types, we
+express a pure API for mutable array construction (the type ``a ⊸ b``
+is the type of linear functions, ``Unrestricted`` is such that
 ``Unrestricted a ⊸ b`` is isomorphic to ``a -> b``):
 
 ::
