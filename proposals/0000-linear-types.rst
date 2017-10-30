@@ -313,6 +313,7 @@ The following list are additional functions for ``Linear.Prelude``:
   - ``class Dropable a => Dupable a where { dup :: a ⊸ (a,a) }``
     - The laws of the ``Dupable`` class are duals to those of monoid
   - ``class Dupable a => Movable a where { move :: a ⊸ Unrestricted a }``
+
     - ``move`` can be used to define ``drop`` and ``dup``. The laws of
       ``Movable`` state that this redefinition yields the same
       functions.
