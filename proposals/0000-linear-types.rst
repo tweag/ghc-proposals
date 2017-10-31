@@ -111,6 +111,28 @@ The two main benefits of this API are:
   base (TCB). Or to put it another way: the user can now write more
   efficient code even when keeping to safe primitives only.
 
+The following example is purely an illustration of resource safety
+(this assumes a generalised ``IO`` monad described in details
+below). The idea is to track the state of BSD socket in the types so
+that only permissible operations can be performed. Currently, these
+invariants must be enforced by the programer with no help from the
+type system.
+
+::
+
+  data State = Unbound | Bound | Listening | Connected
+  data Socket (s :: State)
+  data SocketAddress
+
+  socket :: IO ~1 (Socket Unbound)
+  bind :: Socket Unbound ->. SocketAddress -> IO ~1 (Socket Bound)
+  listen :: Socket Bound->. IO ~1 (Socket Listening)
+  accept :: Socket Listening ->. IO ~1 (Socket Listening, Socket Connected)
+  connect :: Socket Unbound ->. SocketAddress -> IO ~1 (Socket Connected)
+  send :: Socket Connected ->. ByteString -> IO ~1 (Socket Connected, Unrestricted Int)
+  receive :: Socket Connected -> IO ~1 (Socket Connected, Unrestricted ByteString)
+  close :: ∀s. Socket s -> IO ~u ()
+
 Section 5 of the `companion article
 <https://arxiv.org/abs/1710.09756>`_ is dedicated to more advanced
 examples, such as tracking the typestate of sockets, and using
