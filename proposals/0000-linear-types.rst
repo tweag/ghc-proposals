@@ -690,13 +690,6 @@ Explicitly list any remaining issues that remain in the conceptual design and sp
 
 Hopefully this section will be empty by the time the proposal is brought to the steering committee.
 
-Syntax
-~~~~~~
-
-Nothing in the syntax is fixed, except the unicode notation ``a ->. b``
-which is standard from the literature for linear functions. In
-particular the syntax for multiplicity literals could be improved.
-
 Inference
 ~~~~~~~~~
 
