@@ -667,28 +667,105 @@ Hopefully this section will be empty by the time the proposal is brought to the 
 Syntax
 ~~~~~~
 
-- Syntax of multiplicity-annotated arrow?
-- Syntax of multiplicities
+Nothing in the syntax is fixed, except the unicode notation ``a ⊸ b``
+which is standard from the literature for linear functions. In
+particular the syntax for multiplicity literals could be improved.
 
 Inference
 ~~~~~~~~~
 
-- Type annotations
-- inference of annotations on case and let
+- There is no systematic account of type inference. Can it be made
+  predictable when a type annotation is required? For compatibility
+  reasons, we want to infer unrestricted arrows conservatively, but
+  experience shows that it can result in very surprising type errors.
+
+- In Core, we case is indexed by a multiplicity: ``case_p`` (and
+  similarly ``let_p``). In the surface language, we can deduce the
+  multiplicity in equations when their is a type annotation.
+
+  ::
+
+    fst :: (a,b) -> a
+    fst (a,_) = a    -- this is elaborated as a case_ω
+
+    swap :: (a,b) ⊸ (b,a)
+    swap (a,b) = (b,a)   -- this is elaborated as a case_1
+
+  But what of explicit ``case`` and ``let`` in the surface language? We
+  can annotate them with a multiplicity, but it is generally clear from
+  the context which multiplicity is meant. So the multiplicity
+  annotation really ought to be inferred. The general idea is: if
+  their is any linear variable in the scrutiny, then the case must be
+  linear, and if there are only unrestricted variables, it can be
+  unrestricted. Is it sound to always pick the highest possible value ?
+  What if there are multiplicities with variable multiplicity ?
 
 Formalism
 ~~~~~~~~~
 
-- The seq thing
+There's one thing I papered over on the formalism: in Core, ``case``
+is of the form ``case u as x of { <alternatives> }`` where ``x``
+represents the head normal form of ``u``. It is a widely use tool in
+Core to Core passes. It is in particular used to implement the default
+alternative is a case:
+
+::
+
+  fmap' :: (a -> a) -> Maybe a -> Maybe a
+  fmap' (Just x) = Just (f x)
+  fmap' y = y
+
+is elaborated into
+
+::
+
+  \f o -> case o as y of { Just x -> Just (f x) ; WILDCARD -> y }
+
+But it is not obvious what to do for linear cases. The following is a
+linearity violation as ``y`` in a sense contains ``x`` (basically, you
+could define a function ``a ⊸ (a,a)`` generically with this).
+
+::
+  case_1 o as y of { Just x -> Just (x,y) }
+
+So we need a simple (Core needs to stay fairly simple) story for the
+``as`` clause of linear cases.
+
+The easiest thing to do would be to mark ``y`` as dead for linear
+cases, and make sure it stays dead throughout the optimiser. But this
+is not reasonable: it would prevent default cases, which is probably a
+bad idea, and anyway not something we can ensure if we have nested
+patterns.
+
+Solving this will also help understand how to handle linear view
+patterns, the status of which is also unclear.
 
 Base
 ~~~~
 
-- Should we change the internal representation of ``IO`` (and ``ST``)
-- ``MMonad`` hierarchy
-- There is another ``Monad`` hierarchy parametrised like ``Fold``
-- Related: is there a multiplicity-parametric version of ``Traversable``
-- Should ``Int#`` and such be ``Movable``
+- It would be nice to change the defintion of the ``IO`` proper to be a
+  linear function of ``RealWorld``: this would shrink the trusted code
+  base, as even functions which have access to the definition of
+  ``IO`` are forced to thread the ``RealWorld`` properly.
+  But it would require a way to define unboxed tuples with
+  unrestricted constructors.
+- Is there a useful hierarchy below the ``MMonad`` class above?
+- There is a generalisation of the regular monad type class
+  parametrised by a multiplicity:
+
+  ::
+
+    class Monad (p :: Multiplicity) m where
+      return :: a ->: p m a
+      (>>=) :: m a ->: p (a ->: p m b) ->: p m b
+
+   (technically ``Monad ~u`` is a monad in the usual sense, and
+   ``Monad ~1`` a monad in the category of linear functions)
+
+   And a corresponding notion of ``Functor`` and ``Applicative``. We
+   could use it to define a generalisation of ``Traversable`` as well,
+   in the same spirit of ``Fold`` above.
+- Should primitive type such as ``Int#`` be ``Movable``?
 
 Implementation Plan
 -------------------
