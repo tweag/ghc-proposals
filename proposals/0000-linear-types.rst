@@ -81,34 +81,35 @@ is the type of linear functions, ``Unrestricted`` is such that
 
 ::
 
-  type MArray a
-  type Array a
+  data MArray a
+  data Array a
   newMArray :: Int -> (MArray a ⊸ Unrestricted b) ⊸ Unrestricted b
   write :: MArray a ⊸ (Int, a) -> MArray a
   read :: MArray a ⊸ Int -> (MArray a, Unrestricted a)
   freeze :: MArray a ⊸ Unrestricted (Array a)
 
-The gist of this API is that the linear functions ensure that values
-of type ``MArray a`` are always unique references to a mutable
-array. As a consequence mutations cannot be observed by the
-context. Referencial transparency is preserved.
+The types in this interface ensure that values of type ``MArray a``
+are always *unique* references to a mutable array. As a consequence,
+mutations cannot be observed by the context, because references
+aliasing each other is ruled out. Referencial transparency is
+preserved.
 
-There are a number of benefits to this API
+The two main benefits of this API are:
 
-- falling in the category of making more things pure: reads and writes
-  on distinct arrays are not sequenced. This means that the compiler
-  is free to find better optimisation. We could go further and and
-  introduce `fork-join parallelism
+- reads and writes on distinct arrays are not sequenced. This means
+  that the compiler is free to reorder them, e.g. as an optimisation.
+  We could go further and introduce `fork-join parallelism
   <https://en.wikipedia.org/wiki/Fork%E2%80%93join_model>`_ primitives
   where disjoint slices can be mutated in parallel, *e.g.* by
   different cores.
-- falling in the category of typestate: the ``freeze`` function
-  consumes the unique ``MArray`` by turning it into a non-unique
-  immutable array. ``freeze`` does not, in fact, copy the array, it
-  just changes its (static!) state. In the ``ST`` implementation of
-  ``MArray``, the primitive is ``unsafeFreeze`` because it is up to
-  the programmer to promise that they won't ever mutate the frozen
-  ``MArray`` again. This shrinks the code base.
+- The ``freeze`` function consumes the unique ``MArray`` by turning it
+  into a non-unique immutable array. ``freeze`` does not, in fact,
+  copy the array, it just changes its (static!) state. In the ``ST``
+  implementation of ``MArray``, the primitive is ``unsafeFreeze``
+  because it is up to the programmer to promise that they won't ever
+  mutate the frozen ``MArray`` again. This shrinks the trusted code
+  base (TCB). Or to put it another way: the user can now write more
+  efficient code even when keeping to safe primitives only.
 
 Section 5 of the `companion article
 <https://arxiv.org/abs/1710.09756>`_ is dedicated to more advanced
@@ -124,33 +125,30 @@ cannot be used after ``free``.
 Proposed Change Specification
 -----------------------------
 
-Note, however, that this section need not describe details of the
-implementation of the feature. The proposal is merely supposed to give
-a conceptual specification of the new feature and its behavior.
-
-The use of linear functions is enabled with the language extension
-``-XLinearTypes``.
+We introduce a new language extension. Types with a linearity
+specification are syntactically legal anywhere in a module if and only
+if ``-XLinearTypes`` is turned on.
 
 Definition
 ~~~~~~~~~~
 
-We say that a function ``f`` is *linear* if when ``f u`` is consumed
-exactly once, then ``u`` is consumed exactly once. And define consume
-exactly once as
+We say that a function ``f`` is *linear* when ``f u`` is consumed
+exactly once implies that ``u`` is *consumed exactly once* (defined
+as follows).
 
 - Consuming a value of a data type exactly once means evaluating it to
-  head normal form, then consume its fields exactly once
+  head normal form, then consuming its fields exactly once
 - Consuming a function exactly once means applying it and consuming
   its result exactly once
 
 *TODO: specify diverging case*
 
 The type of linear function from type ``A`` to type ``B`` is written
-``A ⊸ B`` (see syntax below).
+``A ->. B`` (see syntax below).
 
 Linearity is a strengthening of the contract that a function must
-usually enforce. The regular function type ``A->B`` will be called the
-type of *unrestricted* functions.
+usually enforce. The regular function type ``A -> B`` will be called
+the type of *unrestricted* functions.
 
 Polymorphism
 ~~~~~~~~~~~~
