@@ -191,9 +191,6 @@ polymorphic function may have variable multiplicity, *e.g.*
 Syntax
 ~~~~~~
 
-*The syntax in this section is non-definitive, feel free to come up
- with better ideas*
-
 The new primary constructs are: multiplicities and the multiplicity
 indexed arrow.
 
