@@ -192,11 +192,11 @@ over whether a function is linear.
 
 A linear function is said to have multiplicity ``1`` while an
 unrestricted function is said to have multiplicity ``ω``. Multiplicity
-polymorphic function may have variable multiplicity, *e.g.*
+polymorphic functions may have variable multiplicity, *e.g.*
 
 ::
 
-  map :: (a ->: p b) -> [a] ->: p [b]
+  map :: (a ->:p b) -> [a] ->:p [b]
 
 Syntax
 ~~~~~~
@@ -219,18 +219,18 @@ indexed arrow.
   - ``p ~+ q``
   - ``p ~* q``
 
-- The multiplicity annotated arrow is written ``a ->: p q``. The type
-  constructor is ``(->: p)`` for each multiplicity ``p``.
+- The multiplicity annotated arrow is written ``a ->:p q``. The type
+  constructor is ``(->:p)`` for each multiplicity ``p``.
 - In addition, in type annotations in binders, the ``::`` be followed
   by an optional multiplicity. So that ``\ (x :: ~1 A) -> x`` has type
-  ``A ->: ~1 A`` (*i.e.* ``A ->. A``), while ``\ (x :: ~u A) -> x`` has
-  type ``A ->: ~u A`` (*i.e.* ``A->A``).
+  ``A ->:~1 A`` (*i.e.* ``A ->. A``), while ``\ (x :: ~u A) -> x`` has
+  type ``A ->:~u A`` (*i.e.* ``A->A``).
 
 The linear and unrestricted arrows are aliases:
 
-- ``(->)`` is an alias for ``(->: ~u)``
+- ``(->)`` is an alias for ``(->:~u)``
 - ``(->.)`` (ASCII syntax) and ``(⊸)`` (Unicode syntax) are aliases
-  for ``(->: ~1)``
+  for ``(->:~1)``
 
 Constructors & pattern-matching
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -297,15 +297,15 @@ Familiar functions with a new type
 Here are functions from ``base`` which are exported in the ``Linear``
 namespace, with their types:
 
-- ``($) :: (a ->: p q) -> a ->: p q``
+- ``($) :: (a ->:p q) -> a ->:p q``
 - ``const :: a ->. b -> b``
 - ``swap :: (a,b) ->. (b,a)``
-- ``flip :: (a ->: p b ->: q -> c) ->. (b ->: q a ->: p ->: c)``
+- ``flip :: (a ->:p b ->:q -> c) ->. (b ->:q a ->:p ->:c)``
 - ``seq :: a -> b ->. b`` (note that the first argument of ``seq``
   cannot be linear as it is only evaluated to head normal forms, it it
   has fields, they are not consumed)
-- ``(.) :: (b ->: p c) ->. (a ->: q c) ->. a ->: (p ~* q) c``
-- ``map :: (a ->: p b) -> [a] ->: p [b]``
+- ``(.) :: (b ->:p c) ->. (a ->:q c) ->. a ->:(p ~* q) c``
+- ``map :: (a ->:p b) -> [a] ->:p [b]``
 - ``(++) :: [a] ->. [a] ->. [a]``
 - ``reverse :: [a] ->. [a]``
 - ``trace :: String ->. a ->. a``
@@ -386,7 +386,7 @@ type in which the multiplicity can vary
 ::
 
   data IORes (p :: Multiplicity) a where  -- it should really be an unboxed pair
-    IORes :: State# RealWorld ->. a ->: p IORes p a
+    IORes :: State# RealWorld ->. a ->:p IORes p a
   type IO p a = State# RealWorld ->. IORes p a
 
 This ``IO`` type does not form a monad, as the multiplicity may change
@@ -396,7 +396,7 @@ at every bind, but it fits the following pattern:
 
   class MMonad m where
     return :: a ->:p m p a
-    (>>=) :: m p a ->. (a ->: p m q b) ->. m q b
+    (>>=) :: m p a ->. (a ->:p m q b) ->. m q b
 
 Unresolvesd question: is there useful ``Functor`` and ``Applicative``
 variants to add below this monad-like class?
@@ -406,7 +406,7 @@ The ``Foldable`` type class is generalised in ``Linear.Data.Foldable``
 ::
 
   class Foldable (p :: Multiplicity) (q :: Multiplicity) t where
-    foldr :: (a ->: p b ->: q b) -> b ->: q t a ->: p b
+    foldr :: (a ->:p b ->:q b) -> b ->:q t a ->:p b
 
 Unresolved question: is there a similar notion of ``Traversable``?
 
@@ -417,7 +417,7 @@ Beyond the fact that ``unsafeCoerce`` can be given a linear type. This
 proposal adds a the following unsafe coercions in
 ``Linear.Unsafe.Coerce``:
 
-- ``unsafeCoerceMultiplicity :: (a ->:p b) ->. (a ->: q b)`` to claim to
+- ``unsafeCoerceMultiplicity :: (a ->:p b) ->. (a ->:q b)`` to claim to
   the compiler that the multiplicity of a function can be, in fact,
   strengthened.
 - ``unsafeUnrestricted :: a ->. Unrestricted a`` to turn a linear value
@@ -782,8 +782,8 @@ Base
   ::
 
     class Monad (p :: Multiplicity) m where
-      return :: a ->: p m a
-      (>>=) :: m a ->: p (a ->: p m b) ->: p m b
+      return :: a ->:p m a
+      (>>=) :: m a ->:p (a ->:p m b) ->:p m b
 
    (technically ``Monad ~u`` is a monad in the usual sense, and
    ``Monad ~1`` a monad in the category of linear functions)
