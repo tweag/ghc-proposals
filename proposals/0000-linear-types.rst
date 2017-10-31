@@ -111,9 +111,16 @@ The two main benefits of this API are:
   base (TCB). Or to put it another way: the user can now write more
   efficient code even when keeping to safe primitives only.
 
-In much the same spirit of the mutable array examples, we can design a
-safe and pure API around ``malloc`` and ``free`` to make it possible
-to manipulate data out of the GC's heap and lower GC presure.
+We argue that linear types have far ranging consequences for the
+language. Systems programming with quasi real-time requirements can
+often benefit from easing pressure on the GC by taking long-lived
+objects out of the GC-managed heap entirely. Fewer long-lived objects
+in the heap means faster major collection times, hence shorter GC
+pauses. Linear types enable *safe* manual memory management for
+long-lived objects.
+
+With linear types, we can write an interface to ``malloc`` and
+``free`` as follows:
 
 ::
 
@@ -121,12 +128,22 @@ to manipulate data out of the GC's heap and lower GC presure.
   read :: Storable a => Ptr a ->. (Ptr a, a)
   free :: a
 
-The following example is purely an illustration of resource safety
-(this assumes a generalised ``IO`` monad described in details
-below). The idea is to track the state of BSD socket in the types so
-that only permissible operations can be performed. Currently, these
-invariants must be enforced by the programer with no help from the
-type system.
+This interface is safe in the sense that users of this interface get
+two strong static guarantees: that all that they allocate will
+eventually be freed, and that after freeing the associated pointer can
+never be read. With these two guarantees in hand, users no longer need
+to rely on the GC for managing all resources, hence benefiting from
+lower tail latencies and potentially higher throughput, while still
+getting freedom from segfaults.
+
+Linear types don't just enable using Haskell for more use cases
+(low-latency trading appliances, low-level services in
+high-performance scientific computing clusters, etc). Correctly
+tracking the lifecycle of I/O resources has been a vexing issue for
+many network services. Creating a variant of the BSD socket API that
+statically guarantees ordering constraints between API calls becomes
+possible without the overhead of heavyweight encodings based e.g. on
+parameterized monads.
 
 ::
 
@@ -143,16 +160,11 @@ type system.
   receive :: Socket Connected -> IO ~1 (Socket Connected, Unrestricted ByteString)
   close :: ∀s. Socket s -> IO ~u ()
 
-Section 5 of the `companion article
-<https://arxiv.org/abs/1710.09756>`_ is dedicated to more advanced
-examples, such as tracking the typestate of sockets, and using
-destination-passing-style to work efficiently with serialised
-data. Linear functions are also known to be able to encode
-communication protocol (*e.g.* complex RPC calls). Yet an other
-envisionned application is in manual memory management: much like in
-the array example, pointers to the C heap are enforced to be unique,
-so yielding a pure API, and ``free`` consumes the pointer, so that it
-cannot be used after ``free``.
+The `paper <https://arxiv.org/abs/1710.09756>`_ mentions other use
+cases as well, such as efficient and safe data serialization as well
+as using types to statically enforce interaction protocols between
+communicating processes (*e.g.* via RPC calls). GHC users will no
+doubt invent many more use cases over time.
 
 Proposed Change Specification
 -----------------------------
