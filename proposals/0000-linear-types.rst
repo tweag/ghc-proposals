@@ -169,8 +169,8 @@ The type of linear function from type ``A`` to type ``B`` is written
 ``A ->. B`` (see syntax below).
 
 Linearity is a strengthening of the contract that a function must
-usually enforce. The regular function type ``A -> B`` will be called
-the type of *unrestricted* functions.
+enforce in some contexts. The regular function type ``A -> B`` will be
+called the type of *unrestricted* functions.
 
 Polymorphism
 ~~~~~~~~~~~~
