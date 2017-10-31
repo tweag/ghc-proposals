@@ -28,6 +28,12 @@ The proposals are submitted in reStructuredText format.  To get inline code, enc
 
 To get hyperlinks, use backticks, angle brackets, and an underscore `like this <http://www.haskell.org/>`_.
 
+TODO: Unrestricted ~> Poly?
+TODO: ``data Mult p a where { Mult :: a ->: p Mult p a }`` <- find a name ?
+TODO: Should we modify ``base`` or define ``linear-base``? Tendency: go for or own base (with a sexier name).
+TODO: syntaxe de la flèche annotée
+TODO: rephrase polymorphism to explain clearly code duplication issue ``(.)``
+
 
 Linear Types
 ============
