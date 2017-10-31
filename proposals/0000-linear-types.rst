@@ -232,11 +232,6 @@ The linear and unrestricted arrows are aliases:
 - ``(->.)`` (ASCII syntax) and ``(⊸)`` (Unicode syntax) are aliases
   for ``(->: ~1)``
 
-Because of the unicode syntax is based on the syntax from the
-published literature, the rest of the proposal will primarily use the
-unicode syntax.
-
-
 Constructors & pattern-matching
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -275,7 +270,6 @@ variables:
 
   f :: Foo2 ->. A
   f (Bar2 x y) = x  -- y is unrestricted, hence does not need to be consumed
-
 
 Base
 ~~~~
