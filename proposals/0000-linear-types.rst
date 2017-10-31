@@ -117,8 +117,8 @@ to manipulate data out of the GC's heap and lower GC presure.
 
 ::
 
-  malloc :: Storable a => a ->. (Ptr a ->. Unrestricted b) ⊸ Unrestricted b
-  read :: Storable a => Ptr a -> . (Ptr a, a)
+  malloc :: Storable a => a ->. (Ptr a ->. Unrestricted b) ->. Unrestricted b
+  read :: Storable a => Ptr a ->. (Ptr a, a)
   free :: a
 
 The following example is purely an illustration of resource safety
