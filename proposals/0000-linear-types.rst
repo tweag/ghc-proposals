@@ -26,7 +26,7 @@ The proposals are submitted in reStructuredText format.  To get inline code, enc
 
  this too
 
-To get hyperlinks, use backticks, angle brackets, and an underscore `like this <http://www.haskell.org/>`_.   
+To get hyperlinks, use backticks, angle brackets, and an underscore `like this <http://www.haskell.org/>`_.
 
 
 Linear Types
@@ -75,18 +75,18 @@ effects without forcing an unnatural sequencing of mutually
 independent effects.
 
 The following example illustrates both points. Using linear types, we
-express a pure API for mutable array construction (the type ``a ⊸ b``
+express a pure API for mutable array construction (the type ``a ->. b``
 is the type of linear functions, ``Unrestricted`` is such that
-``Unrestricted a ⊸ b`` is isomorphic to ``a -> b``):
+``Unrestricted a ->. b`` is isomorphic to ``a -> b``):
 
 ::
 
   data MArray a
   data Array a
-  newMArray :: Int -> (MArray a ⊸ Unrestricted b) ⊸ Unrestricted b
-  write :: MArray a ⊸ (Int, a) -> MArray a
-  read :: MArray a ⊸ Int -> (MArray a, Unrestricted a)
-  freeze :: MArray a ⊸ Unrestricted (Array a)
+  newMArray :: Int -> (MArray a ->. Unrestricted b) ->. Unrestricted b
+  write :: MArray a ->. (Int, a) -> MArray a
+  read :: MArray a ->. Int -> (MArray a, Unrestricted a)
+  freeze :: MArray a ->. Unrestricted (Array a)
 
 The types in this interface ensure that values of type ``MArray a``
 are always *unique* references to a mutable array. As a consequence,
@@ -194,7 +194,7 @@ indexed arrow.
   constructor is ``(->: p)`` for each multiplicity ``p``.
 - In addition, in type annotations in binders, the ``::`` be followed
   by an optional multiplicity. So that ``\ (x :: ~1 A) -> x`` has type
-  ``A ->: ~1 A`` (*i.e.* ``A ⊸ A``), while ``\ (x :: ~u A) -> x`` has
+  ``A ->: ~1 A`` (*i.e.* ``A ->. A``), while ``\ (x :: ~u A) -> x`` has
   type ``A ->: ~u A`` (*i.e.* ``A->A``).
 
 The linear and unrestricted arrows are aliases:
@@ -219,7 +219,7 @@ Constructors of data types defined with the Haskell 98 syntax
     = Bar A B
     | Baz C
 
-Have linear function types, that is ``Bar :: A ⊸ B ⊸ Foo``. This
+Have linear function types, that is ``Bar :: A ->. B ->. Foo``. This
 implies that most types in ``base`` (``Maybe``, ``[]``, etc…) have
 linear constructors. We also make primivitive tuples ``(,)`` have
 linear constructors.
@@ -229,9 +229,9 @@ With the GADT syntax, multiplicity of the arrows is honored:
 ::
 
   data Foo2 where
-    Bar2 :: A ⊸ B -> C
+    Bar2 :: A ->. B -> C
 
-then ``Bar2 :: A ⊸ B -> C``
+then ``Bar2 :: A ->. B -> C``
 
 The definition of consuming a value in a data type exactly once must
 be refined to take the multiplicities of field into account:
@@ -244,7 +244,7 @@ variables:
 
 ::
 
-  f :: Foo2 ⊸ A
+  f :: Foo2 ->. A
   f (Bar2 x y) = x  -- y is unrestricted, hence does not need to be consumed
 
 
@@ -275,18 +275,18 @@ Here are functions from ``base`` which are exported in the ``Linear``
 namespace, with their types:
 
 - ``($) :: (a ->: p q) -> a ->: p q``
-- ``const :: a ⊸ b -> b``
-- ``swap :: (a,b) ⊸ (b,a)``
-- ``flip :: (a ->: p b ->: q -> c) ⊸ (b ->: q a ->: p ->: c)``
-- ``seq :: a -> b ⊸ b`` (note that the first argument of ``seq``
+- ``const :: a ->. b -> b``
+- ``swap :: (a,b) ->. (b,a)``
+- ``flip :: (a ->: p b ->: q -> c) ->. (b ->: q a ->: p ->: c)``
+- ``seq :: a -> b ->. b`` (note that the first argument of ``seq``
   cannot be linear as it is only evaluated to head normal forms, it it
   has fields, they are not consumed)
-- ``(.) :: (b ->: p c) ⊸ (a ->: q c) ⊸ a ->: (p ~* q) c``
+- ``(.) :: (b ->: p c) ->. (a ->: q c) ->. a ->: (p ~* q) c``
 - ``map :: (a ->: p b) -> [a] ->: p [b]``
-- ``(++) :: [a] ⊸ [a] ⊸ [a]``
-- ``reverse :: [a] ⊸ [a]``
-- ``trace :: String ⊸ a ⊸ a``
-- ``error :: String ⊸ a`` (simplified type)
+- ``(++) :: [a] ->. [a] ->. [a]``
+- ``reverse :: [a] ->. [a]``
+- ``trace :: String ->. a ->. a``
+- ``error :: String ->. a`` (simplified type)
   - The goal here is to be able to consume and return linear variables
     from the context. This requires a linear variant of ``show``.
 
@@ -307,10 +307,10 @@ The following list are additional functions for ``Linear.Prelude``:
 - A few type classes help navigate between the unrestricted and
   restricted world
 
-  - ``class Dropable a where { drop :: a ⊸ () }``
-  - ``class Dropable a => Dupable a where { dup :: a ⊸ (a,a) }``
+  - ``class Dropable a where { drop :: a ->. () }``
+  - ``class Dropable a => Dupable a where { dup :: a ->. (a,a) }``
     - The laws of the ``Dupable`` class are duals to those of monoid
-  - ``class Dupable a => Movable a where { move :: a ⊸ Unrestricted a }``
+  - ``class Dupable a => Movable a where { move :: a ->. Unrestricted a }``
 
     - ``move`` can be used to define ``drop`` and ``dup``. The laws of
       ``Movable`` state that this redefinition yields the same
@@ -334,7 +334,7 @@ The following list are additional functions for ``Linear.Prelude``:
 
   ::
 
-    lseq0 :: () ⊸ b ⊸ b
+    lseq0 :: () ->. b ->. b
     lseq0 () b = b
 
   This is a common enough idiom to deserve its own ``Linear.Prelude``
@@ -343,14 +343,17 @@ The following list are additional functions for ``Linear.Prelude``:
 
   ::
 
-    lseq :: Dropable a => a ⊸ b ⊸ b
+    lseq :: Dropable a => a ->. b ->. b
     lseq a b = lseq0 (drop a) b
 
 - Another extremely common idiom which deserves inclusion in
   ``Linear.Prelude`` is returning a pair of a linear state and an
   unrestricted value: ``(s, Unrestricted a)``. ``Linear.Prelude``
-  exports the following data type, abstracting over this pattern: ::
-  data Res s a where Res :: s ⊸ a -> Res s a
+  exports the following data type, abstracting over this pattern:
+
+  ::
+
+     data Res s a where Res :: s ->. a -> Res s a
 
 The interaction of type state and IO (*e.g.* in communication
 protocol) is one of the motivations of linear types. In order to make
@@ -360,8 +363,8 @@ type in which the multiplicity can vary
 ::
 
   data IORes (p :: Multiplicity) a where  -- it should really be an unboxed pair
-    IORes :: State# RealWorld ⊸ a ->: p IORes p a
-  type IO p a = State# RealWorld ⊸ IORes p a
+    IORes :: State# RealWorld ->. a ->: p IORes p a
+  type IO p a = State# RealWorld ->. IORes p a
 
 This ``IO`` type does not form a monad, as the multiplicity may change
 at every bind, but it fits the following pattern:
@@ -370,7 +373,7 @@ at every bind, but it fits the following pattern:
 
   class MMonad m where
     return :: a ->:p m p a
-    (>>=) :: m p a ⊸ (a ->: p m q b) ⊸ m q b
+    (>>=) :: m p a ->. (a ->: p m q b) ->. m q b
 
 Unresolvesd question: is there useful ``Functor`` and ``Applicative``
 variants to add below this monad-like class?
@@ -391,10 +394,10 @@ Beyond the fact that ``unsafeCoerce`` can be given a linear type. This
 proposal adds a the following unsafe coercions in
 ``Linear.Unsafe.Coerce``:
 
-- ``unsafeCoerceMultiplicity :: (a ->:p b) ⊸ (a ->: q b)`` to claim to
+- ``unsafeCoerceMultiplicity :: (a ->:p b) ->. (a ->: q b)`` to claim to
   the compiler that the multiplicity of a function can be, in fact,
   strengthened.
-- ``unsafeUnrestricted :: a ⊸ Unrestricted a`` to turn a linear value
+- ``unsafeUnrestricted :: a ->. Unrestricted a`` to turn a linear value
   into an unrestricted value, without copy.
 
 Formalism
@@ -435,7 +438,7 @@ is well-typed but
 
 ::
 
-  fst :: (a, b) ⊸ a
+  fst :: (a, b) ->. a
   fst (a, _) = a
 
 isn't, ``case`` expressions are annotated with a multiplicity as
@@ -506,8 +509,8 @@ Alternatives
 Subtyping instead of polymorphism
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Since ``A ⊸ B`` is a strengthening of ``A -> B``, it is tempting to
-make ``A ⊸ B`` a subtype of ``A -> B``. But subtyping and polymorphism
+Since ``A ->. B`` is a strengthening of ``A -> B``, it is tempting to
+make ``A ->. B`` a subtype of ``A -> B``. But subtyping and polymorphism
 don't mesh very well, and would yield a significantly more complex
 solution.
 
@@ -519,7 +522,7 @@ In this proposal
 
 ::
 
-  f :: A ⊸ B
+  f :: A ->. B
 
   g :: A -> B
   g = f
@@ -531,7 +534,7 @@ this program to the well-typed η-expansion
 
 ::
 
-  f :: A ⊸ B
+  f :: A ->. B
 
   g :: A -> B
   g x = f x
@@ -594,12 +597,12 @@ motivating ``MArray`` interface.
 The most natural way to do this, in Haskell, is to add a second
 parameter to ``TYPE`` (the first one is for levity polymorphism). So,
 ignoring the levity polymorphism, we would have ``TYPE ~1`` for linear
-types and ``TYPE ~ω`` for unrestricted type. We get polymorphism by
+types and ``TYPE ~u`` for unrestricted type. We get polymorphism by
 abstracting over the multiplicity.
 
 As interesting as it is, there is quite some complication associated
 to it. First, because of laziness, you can't have a function of type
-``(A :: TYPE ~1) -> (B :: TYPE ~ω)`` (because you don't need to
+``(A :: TYPE ~1) -> (B :: TYPE ~u)`` (because you don't need to
 consume the result, hence you may not consume an argument that you
 have to consume). So what would be the type of the arrow? Something
 like ``forall (p :: Multiplicity) (q ⩽ p). p -> q -> q``. So we're
@@ -616,14 +619,14 @@ explicit:
     (:) :: a -> List p a -> List p a
 
 Mixing non-linear and linear lists (*e.g.* with ``(++)``) would
-require either some subtyping from ``List ~ω a`` to ``List ~1 a`` (but
+require either some subtyping from ``List ~u a`` to ``List ~1 a`` (but
 as discussed above, subptyping in presence of polymorphism quickly
 becomes hairy) or some conversion function.
 
 It it worth taking into account that the issues with ``MArray`` and
-``Array`` (which may be ``Array ~1`` and ``Array ~ω`` in this case)
+``Array`` (which may be ``Array ~1`` and ``Array ~u`` in this case)
 above are not solved by such a situation. Unless there is a subptyping
-relation from ``Array ~ω`` from ``Array ~1``, which cannot be performed
+relation from ``Array ~u`` from ``Array ~1``, which cannot be performed
 by an explicit function since this would be equivalent to the
 proposal's situation.
 
@@ -667,7 +670,7 @@ Hopefully this section will be empty by the time the proposal is brought to the 
 Syntax
 ~~~~~~
 
-Nothing in the syntax is fixed, except the unicode notation ``a ⊸ b``
+Nothing in the syntax is fixed, except the unicode notation ``a ->. b``
 which is standard from the literature for linear functions. In
 particular the syntax for multiplicity literals could be improved.
 
@@ -688,7 +691,7 @@ Inference
     fst :: (a,b) -> a
     fst (a,_) = a    -- this is elaborated as a case_ω
 
-    swap :: (a,b) ⊸ (b,a)
+    swap :: (a,b) ->. (b,a)
     swap (a,b) = (b,a)   -- this is elaborated as a case_1
 
   But what of explicit ``case`` and ``let`` in the surface language? We
@@ -723,7 +726,7 @@ is elaborated into
 
 But it is not obvious what to do for linear cases. The following is a
 linearity violation as ``y`` in a sense contains ``x`` (basically, you
-could define a function ``a ⊸ (a,a)`` generically with this).
+could define a function ``a ->. (a,a)`` generically with this).
 
 ::
   case_1 o as y of { Just x -> Just (x,y) }
