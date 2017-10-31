@@ -236,7 +236,7 @@ The linear and unrestricted arrows are aliases:
 Constructors & pattern-matching
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Constructors of data types defined with the Haskell 98 syntax
+Constructors of data types defined with the Haskell'98 syntax
 
 ::
 
@@ -244,10 +244,11 @@ Constructors of data types defined with the Haskell 98 syntax
     = Bar A B
     | Baz C
 
-Have linear function types, that is ``Bar :: A ->. B ->. Foo``. This
-implies that most types in ``base`` (``Maybe``, ``[]``, etc…) have
-linear constructors. We also make primivitive tuples ``(,)`` have
-linear constructors.
+have linear function types, that is ``Bar :: A ->. B ->. Foo``. This
+is true in every module, including those without ``-XLinearTypes``
+turned on. This implies that most types in ``base`` (``Maybe``,
+``[]``, etc…) have linear constructors. We also make primivitive
+tuples ``(,)`` have linear constructors.
 
 With the GADT syntax, multiplicity of the arrows is honored:
 
@@ -259,9 +260,10 @@ With the GADT syntax, multiplicity of the arrows is honored:
 then ``Bar2 :: A ->. B -> C``
 
 The definition of consuming a value in a data type exactly once must
-be refined to take the multiplicities of field into account:
-- Consuming a value in a datatype is exactly once means evaluating it
-  to head normal form and consuming its *linear* fields exactly once
+be refined to take the multiplicities of fields into account:
+
+- Consuming a value in a datatype exactly once means evaluating it to
+  head normal form and consuming its *linear* fields exactly once
 
 When pattern macthing a linear argument, linear fields are introduced
 as linear variables, and unrestricted fields as unrestricted
