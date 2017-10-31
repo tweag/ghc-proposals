@@ -277,16 +277,16 @@ variables:
 Base
 ~~~~
 
-Because linear functions are only strengthen the contract of
-unrestricted function, a number of functions of ``base`` can get a
-more precise type. However, for pedagogical reason, to prevent linear
-types from interfering with newcomers' understanding the ``Prelude``,
-this proposal introduces a new ``Linear`` namespace to hold the new
-types. For instance ``Linear.Prelude`` will export a strengthened
-version of ``Prelude``, ``Linear.Data.List`` a strenghtened version of
+Because linear functions only strengthen the contract of unrestricted
+function, a number of functions of ``base`` can get a more precise
+type. However, for pedagogical reason, to prevent linear types from
+interfering with newcomers' understanding the ``Prelude``, this
+proposal introduces a new ``Linear`` namespace to hold the new types.
+For instance ``Prelude.Linear`` will export a strengthened version of
+``Prelude``, ``Data.List.Linear`` a strenghtened version of
 ``Data.List``.
 
-In practice, ``Linear.Prelude`` will contain the actual implementation
+In practice, ``Prelude.Linear`` will contain the actual implementation
 while ``Prelude`` will merely re-export the functions strengthening
 the types of a few of them (*i.e.* there is no need to duplicate
 implementations).
