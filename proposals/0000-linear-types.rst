@@ -345,8 +345,8 @@ The following list are additional functions for ``Linear.Prelude``:
 - A few type classes help navigate between the unrestricted and
   restricted world
 
-  - ``class Dropable a where { drop :: a ->. () }``
-  - ``class Dropable a => Dupable a where { dup :: a ->. (a,a) }``
+  - ``class Droppable a where { drop :: a ->. () }``
+  - ``class Droppable a => Dupable a where { dup :: a ->. (a,a) }``
     - The laws of the ``Dupable`` class are duals to those of monoid
   - ``class Dupable a => Movable a where { move :: a ->. Unrestricted a }``
 
@@ -355,7 +355,7 @@ The following list are additional functions for ``Linear.Prelude``:
       functions.
     - Remark: all first-order data types (``Bool``, ``[]``,
       ``Either``, …) are ``Movable``. *e.g.* the instance for lists
-      (ignoring the ``Dropable`` and ``Dupable`` constraint for
+      (ignoring the ``Droppable`` and ``Dupable`` constraint for
       conciseness) :: instance Movable a => Movable [a] where move []
       = Unrestricted [] move (a:l) = case (move a, move l) of
       (Unrestricted a', Unrestricted l') -> Unrestricted (a:l')
@@ -376,12 +376,12 @@ The following list are additional functions for ``Linear.Prelude``:
     lseq0 () b = b
 
   This is a common enough idiom to deserve its own ``Linear.Prelude``
-  function. For convenience, let us generalise a ``Dropable``
+  function. For convenience, let us generalise a ``Droppable``
   argument:
 
   ::
 
-    lseq :: Dropable a => a ->. b ->. b
+    lseq :: Droppable a => a ->. b ->. b
     lseq a b = lseq0 (drop a) b
 
 - Another extremely common idiom which deserves inclusion in
