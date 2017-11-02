@@ -29,7 +29,6 @@ The proposals are submitted in reStructuredText format.  To get inline code, enc
 To get hyperlinks, use backticks, angle brackets, and an underscore `like this <http://www.haskell.org/>`_.
 
 TODO: Unrestricted ~> Poly?
-TODO: syntaxe de la flèche annotée
 
 
 Linear Types
@@ -154,14 +153,14 @@ parameterized monads.
   data Socket (s :: State)
   data SocketAddress
 
-  socket :: IO ~1 (Socket Unbound)
-  bind :: Socket Unbound ->. SocketAddress -> IO ~1 (Socket Bound)
-  listen :: Socket Bound->. IO ~1 (Socket Listening)
-  accept :: Socket Listening ->. IO ~1 (Socket Listening, Socket Connected)
-  connect :: Socket Unbound ->. SocketAddress -> IO ~1 (Socket Connected)
-  send :: Socket Connected ->. ByteString -> IO ~1 (Socket Connected, Unrestricted Int)
-  receive :: Socket Connected -> IO ~1 (Socket Connected, Unrestricted ByteString)
-  close :: ∀s. Socket s -> IO ~u ()
+  socket :: IO '1 (Socket Unbound)
+  bind :: Socket Unbound ->. SocketAddress -> IO '1 (Socket Bound)
+  listen :: Socket Bound->. IO '1 (Socket Listening)
+  accept :: Socket Listening ->. IO '1 (Socket Listening, Socket Connected)
+  connect :: Socket Unbound ->. SocketAddress -> IO '1 (Socket Connected)
+  send :: Socket Connected ->. ByteString -> IO '1 (Socket Connected, Unrestricted Int)
+  receive :: Socket Connected -> IO '1 (Socket Connected, Unrestricted ByteString)
+  close :: ∀s. Socket s -> IO 'U ()
 
 The `paper <https://arxiv.org/abs/1710.09756>`_ mentions other use
 cases as well, such as efficient and safe data serialization as well
@@ -211,7 +210,7 @@ polymorphic functions may have variable multiplicity, *e.g.*
 
 ::
 
-  map :: (a ->:p b) -> [a] ->:p [b]
+  map :: (a : p -> b) -> [a] : p -> [b]
 
 without polymorphism we would need two implementations of `map`. With
 the exact same code: one for ``p=1`` and one for ``p=ω``. Function
@@ -220,7 +219,7 @@ would require four identical implementations:
 
 ::
 
-  (.) :: (b ->:p c) -> (a ->:q b) -> a ->: (p :* q) c
+  (.) :: (b : p -> c) -> (a : q -> b) -> a : (p ':* q) -> c
 
 Syntax
 ~~~~~~
@@ -228,34 +227,32 @@ Syntax
 The new primary constructs are: multiplicities and the multiplicity
 indexed arrow.
 
-- Multiplicity literal are lexically distinct from type constants to
-  avoid collisions. Literals starting with the character ``~`` are
-  multiplicity literals
+- Multiplicities are a datatype:
 
-  - Multiplicity ``1`` is written ``~1``
-  - Multiplicity ``ω`` is written ``~u`` (for unrestricted) in ASCII
-    syntax, and ``~ω`` in Unicode syntax
+  ::
 
-- Multiplicity variables are type variables of kind ``Multiplicity``.
-- We will also need to write sums and products of multiplicities (see
-  formalism below)
+    data Multiplicity
+      = One
+      | Omega
+      | Multiplicity :* Multiplicity
+      | Multiplicity :+ Multiplicity
 
-  - ``p ~+ q``
-  - ``p ~* q``
-
-- The multiplicity annotated arrow is written ``a ->:p b``. The type
-  constructor is ``(->:p)`` for each multiplicity ``p``.
+  Note: unification of multiplicities will be performed up to the
+  semiring laws. In the following, for conciseness, we write ``1`` for
+  ``One`` and ``U`` (ASCII) or ``ω`` (Unicode) for ``Omega``.
+- The multiplicity annotated arrow is written ``a : p -> b``. The type
+  constructor is ``(: p ->)`` for each multiplicity ``p``.
 ..
    - In addition, in type annotations in binders, the ``::`` be followed
      by an optional multiplicity. So that ``\ (x ::1 A) -> x`` has type
-     ``A ->:~1 A`` (*i.e.* ``A ->. A``), while ``\ (x ::u A) -> x`` has
-     type ``A ->:u A`` (*i.e.* ``A->A``).
+     ``A :'1-> A`` (*i.e.* ``A ->. A``), while ``\ (x ::u A) -> x`` has
+     type ``A :'u-> A`` (*i.e.* ``A->A``).
 
 The linear and unrestricted arrows are aliases:
 
-- ``(->)`` is an alias for ``(->:~u)``
+- ``(->)`` is an alias for ``(: 'U ->)``
 - ``(->.)`` (ASCII syntax) and ``(⊸)`` (Unicode syntax) are aliases
-  for ``(->:~1)``
+  for ``(: '1 ->)``
 
 Constructors & pattern-matching
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -325,8 +322,8 @@ Formalism
 
 This section describes the changes required in Core.
 
-For ease of type-checking, we add another multiplicity: ``~0``
-representing definite absence of consumption of an argument (``~0``
+For ease of type-checking, we add another multiplicity: ``0``
+representing definite absence of consumption of an argument (``0``
 has also been used by `Conor McBride
 <https://link.springer.com/chapter/10.1007/978-3-319-30936-1_12>`_ to
 handle dependent types, which may matter for Dependent Haskell).
@@ -370,12 +367,12 @@ particular ``_`` is an unrestricted pattern) and the expression
 typechecks.
 
 This has one consequences: ``case_0`` cannot be allowed, as it would
-break the definition of ``~0`` (it would force something which is, by
+break the definition of ``0`` (it would force something which is, by
 definition, definitely not consumed, for instance, it would allow
-computing the length of a list with multiplicity ``~0``). But we do
+computing the length of a list with multiplicity ``0``). But we do
 want to accept ``case_p`` when ``p`` is a variable. Therefore me must
-take the convention that variables never stand for the ``~0``
-multiplicity, and in particular that ``~0`` is not a valid argument
+take the convention that variables never stand for the ``0``
+multiplicity, and in particular that ``0`` is not a valid argument
 for a multiplicity application.
 
 Remark: ``let`` binders are decorated like ``case``, with the
@@ -516,13 +513,13 @@ motivating ``MArray`` interface.
 
 The most natural way to do this, in Haskell, is to add a second
 parameter to ``TYPE`` (the first one is for levity polymorphism). So,
-ignoring the levity polymorphism, we would have ``TYPE ~1`` for linear
-types and ``TYPE ~u`` for unrestricted type. We get polymorphism by
+ignoring the levity polymorphism, we would have ``TYPE '1`` for linear
+types and ``TYPE 'U`` for unrestricted type. We get polymorphism by
 abstracting over the multiplicity.
 
 As interesting as it is, there is quite some complication associated
 to it. First, because of laziness, you can't have a function of type
-``(A :: TYPE ~1) -> (B :: TYPE ~u)`` (because you don't need to
+``(A :: TYPE '1) -> (B :: TYPE 'U)`` (because you don't need to
 consume the result, hence you may not consume an argument that you
 have to consume). So what would be the type of the arrow? Something
 like ``forall (p :: Multiplicity) (q ⩽ p). p -> q -> q``. So we're
@@ -539,14 +536,14 @@ explicit:
     (:) :: a -> List p a -> List p a
 
 Mixing non-linear and linear lists (*e.g.* with ``(++)``) would
-require either some subtyping from ``List ~u a`` to ``List ~1 a`` (but
+require either some subtyping from ``List 'U a`` to ``List '1 a`` (but
 as discussed above, subptyping in presence of polymorphism quickly
 becomes hairy) or some conversion function.
 
 It it worth taking into account that the issues with ``MArray`` and
-``Array`` (which may be ``Array ~1`` and ``Array ~u`` in this case)
+``Array`` (which may be ``Array '1`` and ``Array 'U`` in this case)
 above are not solved by such a situation. Unless there is a subptyping
-relation from ``Array ~u`` from ``Array ~1``, which cannot be performed
+relation from ``Array 'U`` from ``Array '1``, which cannot be performed
 by an explicit function since this would be equivalent to the
 proposal's situation.
 
@@ -571,7 +568,7 @@ declaring toplevel linear binders
 ::
 
   module Foo where
-  token :: ~1 A
+  token ::('1) A  -- made up syntax
 
 Here ``token`` would have be consumed exactly once by the program,
 this property is a link-time property. This generalised the
