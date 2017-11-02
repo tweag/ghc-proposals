@@ -17,10 +17,10 @@ This proposal is `discussed at this pull request <https://github.com/ghc-proposa
 Linear Types
 ============
 
-This proposal introduces a notion of *linear function* to GHC.
-Linear functions are regular functions, which guarantee that they will
-use their argument exactly once. Whether a function ``f`` is linear or
-not is called the *multiplicity* of ``f``. We propose a new language
+This proposal introduces a notion of *linear function* to GHC. Linear
+functions are regular functions that guarantee that they will use
+their argument exactly once. Whether a function ``f`` is linear or not
+is called the *multiplicity* of ``f``. We propose a new language
 extension, ``-XLinearTypes``. When turned on, the user can enforce
 a given multiplicity for ``f`` using a type annotation.
 
@@ -35,7 +35,7 @@ Motivation
 Haskell, along with a few other languages, heralded the notion of
 *type safety* into mainstream programming. That is, *well-typed
 programs do not go wrong*. Well-typed programs do sometimes crash, or
-fail to terminate, but they do not segfault. But the system resources
+fail to terminate, but they do not segfault. Now, the system resources
 that these programs manipulate have changing states, need to be
 initialized before use and conversely, must be freed in a timely
 manner. We want not just type safety in Haskell, but also *resource
@@ -54,10 +54,11 @@ computations that still look pure from the outside has an unfortunate
 consequence: computations are oversequentialized, making it hard for
 the compiler to recover lost opportunities for parallelism.
 
-Linear types enable better solutions to both problems: using types to
-guarantee resource safety, and using types to control the scope of
-effects without forcing an unnatural sequencing of mutually
-independent effects.
+Linear types enable better solutions to both problems:
+
+1. using types to guarantee resource safety, and
+2. using types to control the scope of effects without forcing an
+   unnatural sequencing of mutually independent effects.
 
 The following example illustrates both points. Using linear types, we
 express a pure API for mutable array construction (the type ``a ->. b``
@@ -114,12 +115,15 @@ With linear types, we can write an interface to ``malloc`` and
   free :: a
 
 This interface is safe in the sense that users of this interface get
-two strong static guarantees: that all that they allocate will
-eventually be freed, and that after freeing the associated pointer can
-never be read. With these two guarantees in hand, users no longer need
-to rely on the GC for managing all resources, hence benefiting from
-lower tail latencies and potentially higher throughput, while still
-getting freedom from segfaults.
+two strong static guarantees:
+
+1. that all that they allocate will eventually be freed, and
+2. that after freeing the associated pointer can never be read.
+
+With these two guarantees in hand, users no longer need to rely on the
+GC for managing all resources, hence benefiting from lower tail
+latencies and potentially higher throughput, while still getting
+freedom from segfaults.
 
 Linear types don't just enable using Haskell for more use cases
 (low-latency trading appliances, low-level services in
@@ -183,8 +187,8 @@ Polymorphism
 ~~~~~~~~~~~~
 
 In order for linear functions and unrestricted functions not to live
-in completely distinct worlds, hence avoid code duplication, we
-introduce a notion of polymorphism, dubbed multiplicity polymorphism,
+in completely distinct worlds, to avoid code duplication, we
+introduce a notion of polymorphism, dubbed *multiplicity polymorphism*,
 over whether a function is linear.
 
 A linear function is said to have multiplicity ``1`` while an
