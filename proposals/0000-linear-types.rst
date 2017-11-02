@@ -29,7 +29,6 @@ The proposals are submitted in reStructuredText format.  To get inline code, enc
 To get hyperlinks, use backticks, angle brackets, and an underscore `like this <http://www.haskell.org/>`_.
 
 TODO: Unrestricted ~> Poly?
-TODO: Should we modify ``base`` or define ``linear-base``? Tendency: go for or own base (with a sexier name).
 TODO: syntaxe de la flèche annotée
 
 
@@ -306,150 +305,20 @@ Because linear functions only strengthen the contract of unrestricted
 function, a number of functions of ``base`` can get a more precise
 type. However, for pedagogical reason, to prevent linear types from
 interfering with newcomers' understanding the ``Prelude``, this
-proposal introduces a new ``Linear`` namespace to hold the new types.
-For instance ``Prelude.Linear`` will export a strengthened version of
-``Prelude``, ``Data.List.Linear`` a strenghtened version of
-``Data.List``.
+proposal does not modify ``base``. Instead we will release a library
+exposing the stronger types for ``base`` functions.
 
-In practice, ``Prelude.Linear`` will contain the actual implementation
-while ``Prelude`` will merely re-export the functions strengthening
-the types of a few of them (*i.e.* there is no need to duplicate
-implementations).
+The only function which will need to change is ``($)`` because its
+typing rules is built in the type checker.
 
-Familiar functions with a new type
-++++++++++++++++++++++++++++++++++
-
-*Some important functions are probably still missing here, do propose
- to add more*
-
-Here are functions from ``base`` which are exported in the ``Linear``
-namespace, with their types:
-
-- ``($) :: (a ->:p q) -> a ->:p q``
-- ``const :: a ->. b -> b``
-- ``swap :: (a,b) ->. (b,a)``
-- ``flip :: (a ->:p b ->:q -> c) ->. (b ->:q a ->:p ->:c)``
-- ``seq :: a -> b ->. b`` (note that the first argument of ``seq``
-  cannot be linear as it is only evaluated to head normal forms, it it
-  has fields, they are not consumed)
-- ``(.) :: (b ->:p c) ->. (a ->:q c) ->. a ->:(p ~* q) c``
-- ``map :: (a ->:p b) -> [a] ->:p [b]``
-- ``(++) :: [a] ->. [a] ->. [a]``
-- ``reverse :: [a] ->. [a]``
-- ``trace :: String ->. a ->. a``
-- ``error :: String ->. a`` (simplified type)
-  - The goal here is to be able to consume and return linear variables
-    from the context. This requires a linear variant of ``show``.
-
-
-New definitions
-+++++++++++++++
-
-Note that the type of type class methods cannot be strengthened
-without breaking backwards compatibility as a stronger type means
-fewer instances. So all type class changes introduce new type classes.
-
-The following list are additional functions for ``Linear.Prelude``:
-
-- ``data Unrestricted a where { Unrestricted :: a -> Unrestricted a
-  }`` is the primary way to return an unrestricted value (consuming a
-  value of type ``Unrestricted a`` exactly once means evaluating it to
-  head normal form)
-- A few type classes help navigate between the unrestricted and
-  restricted world
-
-  - ``class Droppable a where { drop :: a ->. () }``
-  - ``class Droppable a => Dupable a where { dup :: a ->. (a,a) }``
-    - The laws of the ``Dupable`` class are duals to those of monoid
-  - ``class Dupable a => Movable a where { move :: a ->. Unrestricted a }``
-
-    - ``move`` can be used to define ``drop`` and ``dup``. The laws of
-      ``Movable`` state that this redefinition yields the same
-      functions.
-    - Remark: all first-order data types (``Bool``, ``[]``,
-      ``Either``, …) are ``Movable``. *e.g.* the instance for lists
-      (ignoring the ``Droppable`` and ``Dupable`` constraint for
-      conciseness) :: instance Movable a => Movable [a] where move []
-      = Unrestricted [] move (a:l) = case (move a, move l) of
-      (Unrestricted a', Unrestricted l') -> Unrestricted (a:l')
-    - Primitive data types like ``Int`` are sufficiently like data
-      types that they should be ``Movable`` as well. We can make
-      ``Int`` movable for free by declaring ``data Int where { Int# ::
-      Int# -> Int }`` (*i.e.* a linear variable of type ``Int``
-      contains an unrestricted ``Int#``). But it may also make sense
-      to export enough primitive to make ``Int#`` movable.
-
-- As mentioned above, ``seq`` is not linear in its first argument. But
-  it is easy to define a variant that is, only it requires the first
-  argument to be of type ``()``
-
-  ::
-
-    lseq0 :: () ->. b ->. b
-    lseq0 () b = b
-
-  This is a common enough idiom to deserve its own ``Linear.Prelude``
-  function. For convenience, let us generalise a ``Droppable``
-  argument:
-
-  ::
-
-    lseq :: Droppable a => a ->. b ->. b
-    lseq a b = lseq0 (drop a) b
-
-- Another extremely common idiom which deserves inclusion in
-  ``Linear.Prelude`` is returning a pair of a linear state and an
-  unrestricted value: ``(s, Unrestricted a)``. ``Linear.Prelude``
-  exports the following data type, abstracting over this pattern:
-
-  ::
-
-     data Res s a where Res :: s ->. a -> Res s a
-
-The interaction of type state and IO (*e.g.* in communication
-protocol) is one of the motivations of linear types. In order to make
-it convenient to work with, we introduce in ``Linear.IO`` an ``IO``
-type in which the multiplicity can vary
+The precise content of the library is out of scope of this proposal,
+but it will also contain convenient types to work with linear types
+such as:
 
 ::
 
-  data IORes (p :: Multiplicity) a where  -- it should really be an unboxed pair
-    IORes :: State# RealWorld ->. a ->:p IORes p a
-  type IO p a = State# RealWorld ->. IORes p a
-
-This ``IO`` type does not form a monad, as the multiplicity may change
-at every bind, but it fits the following pattern:
-
-::
-
-  class MMonad m where
-    return :: a ->:p m p a
-    (>>=) :: m p a ->. (a ->:p m q b) ->. m q b
-
-Unresolvesd question: is there useful ``Functor`` and ``Applicative``
-variants to add below this monad-like class?
-
-The ``Foldable`` type class is generalised in ``Linear.Data.Foldable``
-
-::
-
-  class Foldable (p :: Multiplicity) (q :: Multiplicity) t where
-    foldr :: (a ->:p b ->:q b) -> b ->:q t a ->:p b
-
-Unresolved question: is there a similar notion of ``Traversable``?
-
-New unsafe constructions
-++++++++++++++++++++++++
-
-Beyond the fact that ``unsafeCoerce`` can be given a linear type. This
-proposal adds a the following unsafe coercions in
-``Linear.Unsafe.Coerce``:
-
-- ``unsafeCoerceMultiplicity :: (a ->:p b) ->. (a ->:q b)`` to claim to
-  the compiler that the multiplicity of a function can be, in fact,
-  strengthened.
-- ``unsafeUnrestricted :: a ->. Unrestricted a`` to turn a linear value
-  into an unrestricted value, without copy.
+   data Unrestricted a where
+     Unrestricted :: a -> Unrestricted a
 
 Formalism
 ~~~~~~~~~
@@ -786,33 +655,6 @@ patterns.
 
 Solving this will also help understand how to handle linear view
 patterns, the status of which is also unclear.
-
-Base
-~~~~
-
-- It would be nice to change the defintion of the ``IO`` proper to be a
-  linear function of ``RealWorld``: this would shrink the trusted code
-  base, as even functions which have access to the definition of
-  ``IO`` are forced to thread the ``RealWorld`` properly.
-  But it would require a way to define unboxed tuples with
-  unrestricted constructors.
-- Is there a useful hierarchy below the ``MMonad`` class above?
-- There is a generalisation of the regular monad type class
-  parametrised by a multiplicity:
-
-  ::
-
-    class Monad (p :: Multiplicity) m where
-      return :: a ->:p m a
-      (>>=) :: m a ->:p (a ->:p m b) ->:p m b
-
-   (technically ``Monad ~u`` is a monad in the usual sense, and
-   ``Monad ~1`` a monad in the category of linear functions)
-
-   And a corresponding notion of ``Functor`` and ``Applicative``. We
-   could use it to define a generalisation of ``Traversable`` as well,
-   in the same spirit of ``Fold`` above.
-- Should primitive type such as ``Int#`` be ``Movable``?
 
 Implementation Plan
 -------------------
