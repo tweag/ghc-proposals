@@ -511,11 +511,6 @@ Unresolved questions:
 Costs and Drawbacks
 -------------------
 
-TODO: clean header
-Give an estimate on development and maintenance costs. List how this
-effects learnability of the language for novice users. Define and list
-any remaining drawbacks that cannot be resolved.
-
 Learnability
 ~~~~~~~~~~~~
 
