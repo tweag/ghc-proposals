@@ -293,7 +293,13 @@ proposal does not modify ``base``. Instead we will release a library
 exposing the stronger types for ``base`` functions.
 
 The only function which will need to change is ``($)`` because its
-typing rules is built in the type checker.
+typing rules is built in the type checker. Ignoring the details about
+levity and higher-rank polymorphism in the typing rule, the type
+``($)`` will be:
+
+::
+
+  ($) :: (a:p -> b) ⊸ a:p -> b
 
 The precise content of the library is out of scope of this proposal,
 but it will also contain convenient types to work with linear types
