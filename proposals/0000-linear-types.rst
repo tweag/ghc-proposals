@@ -240,11 +240,6 @@ indexed arrow.
   ``One`` and ``U`` (ASCII) or ``ω`` (Unicode) for ``Omega``.
 - The multiplicity annotated arrow is written ``a : p -> b``. The type
   constructor is ``(: p ->)`` for each multiplicity ``p``.
-..
-   - In addition, in type annotations in binders, the ``::`` be followed
-     by an optional multiplicity. So that ``\ (x ::1 A) -> x`` has type
-     ``A :'1-> A`` (*i.e.* ``A ->. A``), while ``\ (x ::u A) -> x`` has
-     type ``A :'u-> A`` (*i.e.* ``A->A``).
 
 The linear and unrestricted arrows are aliases:
 
