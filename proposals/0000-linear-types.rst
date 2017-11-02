@@ -28,8 +28,6 @@ The proposals are submitted in reStructuredText format.  To get inline code, enc
 
 To get hyperlinks, use backticks, angle brackets, and an underscore `like this <http://www.haskell.org/>`_.
 
-TODO: Unrestricted ~> Poly?
-
 
 Linear Types
 ============
