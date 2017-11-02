@@ -202,7 +202,7 @@ polymorphic functions may have variable multiplicity, *e.g.*
 
 ::
 
-  map :: (a : p -> b) -> [a] : p -> [b]
+  map :: (a:p -> b) -> [a]:p -> [b]
 
 without polymorphism we would need two implementations of `map`. With
 the exact same code: one for ``p=1`` and one for ``p=ω``. Function
@@ -211,7 +211,7 @@ would require four identical implementations:
 
 ::
 
-  (.) :: (b : p -> c) -> (a : q -> b) -> a : (p ':* q) -> c
+  (.) :: (b:p -> c) -> (a:q -> b) -> a:(p ':* q) -> c
 
 Syntax
 ~~~~~~
@@ -232,14 +232,14 @@ indexed arrow.
   Note: unification of multiplicities will be performed up to the
   semiring laws. In the following, for conciseness, we write ``1`` for
   ``One`` and ``U`` (ASCII) or ``ω`` (Unicode) for ``Omega``.
-- The multiplicity annotated arrow is written ``a : p -> b``. The type
-  constructor is ``(: p ->)`` for each multiplicity ``p``.
+- The multiplicity annotated arrow is written ``a:p -> b``. The type
+  constructor is ``(:p ->)`` for each multiplicity ``p``.
 
 The linear and unrestricted arrows are aliases:
 
-- ``(->)`` is an alias for ``(: 'U ->)``
+- ``(->)`` is an alias for ``(:'U ->)``
 - ``(->.)`` (ASCII syntax) and ``(⊸)`` (Unicode syntax) are aliases
-  for ``(: '1 ->)``
+  for ``(:'1 ->)``
 
 Constructors & pattern-matching
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
