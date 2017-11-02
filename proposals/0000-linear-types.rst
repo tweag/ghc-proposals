@@ -646,3 +646,7 @@ patterns, the status of which is also unclear.
 Implementation Plan
 -------------------
 (Optional) If accepted who will implement the change? Which other ressources and prerequisites are required for implementation?
+
+- @aspiwack will implement the proposal
+- @aspiwack will implement and release a library exporting standard
+  functions and types for linearly typed programs.
