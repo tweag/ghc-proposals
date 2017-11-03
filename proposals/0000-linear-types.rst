@@ -312,7 +312,10 @@ functions, a number of functions of ``base`` can get a more precise
 type. However, for pedagogical reason, to prevent linear types from
 interfering with newcomers' understanding the ``Prelude``, this
 proposal does not modify ``base``. Instead we will release a library
-exposing the stronger types for ``base`` functions.
+exposing the stronger types for ``base`` functions. This library will
+not redefine any type, and instead takes advantage of the fact that
+data types, in ``base`` are linear by default to reuse the same types,
+hence remain compatible with base.
 
 The only function which will need to change is ``($)`` because its
 typing rules is built in the type checker. Ignoring the details about
@@ -431,6 +434,8 @@ questions below for more):
   an equation, we want to infer the multiplicity annotation. The
   process for this is not yet defined.
 
+TODO: subtyping-like situations (first-order)
+
 Effect and Interactions
 -----------------------
 
@@ -454,6 +459,9 @@ Unresolved: view patterns
 Unresolved: ``@`` patterns
 Remark: lazy pattern-matching is only allowed for patterns as
 multiplicity ``ω``.
+TODO: when using a library with linear types and you don't: you won't
+be able to use functions which take linear functions as arguments, but
+first-order functions with linear types will work silently.
 
 Costs and Drawbacks
 -------------------
