@@ -234,9 +234,9 @@ indexed arrow.
       | Multiplicity :* Multiplicity
       | Multiplicity :+ Multiplicity
 
-  Note: unification of multiplicities will be performed up to the
-  semiring laws. In the following, for conciseness, we write ``1`` for
-  ``One`` and ``U`` (ASCII) or ``ω`` (Unicode) for ``Omega``.
+  In the following, for conciseness, we write ``1`` for ``One`` and
+  ``U`` (ASCII) or ``ω`` (Unicode) for ``Omega``. Note: unification
+  of multiplicities will be performed up to the semiring laws.
 - The multiplicity annotated arrow, for polymorphism, is written ``a:p
   -> b`` (where ``a`` and ``b`` are types and ``p`` is a
   -multiplicity). To avoid introducing a new notion of "mixfix"
