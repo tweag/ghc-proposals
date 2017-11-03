@@ -135,6 +135,7 @@ possible without the overhead of heavyweight encodings based *e.g.* on
 parameterized monads.
 
 ::
+
   -- We need an variant of the IO monad where actions are linear
   data IOL a
   returnL :: a ->. IOL a
