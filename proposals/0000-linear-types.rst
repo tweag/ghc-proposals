@@ -177,14 +177,14 @@ as follows).
 The type of linear function from type ``A`` to type ``B`` is written
 ``A ->. B`` (see syntax below).
 
-Linearity is a strengthening of the contract that a function must
-enforce in some contexts. The regular function type ``A -> B`` will be
-called the type of *unrestricted* functions.
+Linearity is a strengthening of the contract of the regular function
+type ``A -> B``, which will be called the type of *unrestricted*
+functions.
 
 Remark: linear function ``f`` can diverge or be called on diverging
 data. It may feel weird because ``f`` will not necessarily consume its
-argument. But it's alright: the metatheory still works, and think of a
-diverging computation as not consuming its result exactly once,
+argument. But it's alright: the metatheory still works. One can think
+of a diverging computation as not consuming its result exactly once,
 therefore, it is vacuously true that if ``f u`` is consumed exactly
 once, then ``u`` is consumed exactly once.
 
