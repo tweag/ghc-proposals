@@ -94,7 +94,7 @@ The two main benefits of this API are:
   implementation of ``MArray``, the primitive is ``unsafeFreeze``
   because it is up to the programmer to promise that they won't ever
   mutate the frozen ``MArray`` again. This shrinks the trusted code
-  base (TCB). Or to put it another way: the user can now write more
+  base. Or to put it another way: the user can now write more
   efficient code even when keeping to safe primitives only.
 
 We argue that linear types have far ranging consequences for the
