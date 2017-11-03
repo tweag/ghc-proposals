@@ -435,6 +435,7 @@ questions below for more):
   process for this is not yet defined.
 
 TODO: subtyping-like situations (first-order)
+TODO: forbid ``case_0`` (and variable substitution, and type application)
 
 Effect and Interactions
 -----------------------
@@ -461,20 +462,10 @@ Remark: lazy pattern-matching is only allowed for patterns as
 multiplicity ``ω``.
 TODO: when using a library with linear types and you don't: you won't
 be able to use functions which take linear functions as arguments, but
-first-order functions with linear types will work silently.
+first-order functions with linear types will work silently. When using
+a function which require a linear type, you will get an error from ``-XLinearTypes``.
 
-Costs and Drawbacks
--------------------
-
-Give an estimate on development and maintenance costs. List how this
-effects learnability of the language for novice users. Define and list
-any remaining drawbacks that cannot be resolved.
-
-This proposal tries hard to make the changes invisible to newcomers,
-however, if many libraries start adopting it, the new function types
-will appear in APIs. They can be safely ignore, but they can still be
-considered distracting.
-
+TODO (better phrasing)
 There is a an issue that defining newtypes such as
 
 ::
@@ -484,6 +475,27 @@ There is a an issue that defining newtypes such as
 
 Because of laziness which could cause linear values not to be
 consumed.
+
+Costs and Drawbacks
+-------------------
+
+TODO: clean header
+Give an estimate on development and maintenance costs. List how this
+effects learnability of the language for novice users. Define and list
+any remaining drawbacks that cannot be resolved.
+
+This proposal tries hard to make the changes invisible to newcomers,
+however, if many libraries start adopting it, the new function types
+will appear in APIs. They can be safely ignore, but they can still be
+considered distracting.
+
+TODO: the arrow type constructor is used very often in GHC's internal,
+so there are many place which need to be handle linearity. It's often
+straightforward, but still a possible source of mistakes
+TODO: modifies core (modification not very deep, but every
+core-to-core pass must now be careful about linearity)
+TODO: unification modulo AC is not trivial (though we probably
+actually need a fraction of this). Some care required.
 
 
 Alternatives
@@ -677,8 +689,15 @@ Inference
   unrestricted. Is it sound to always pick the highest possible value ?
   What if there are multiplicities with variable multiplicity ?
 
+Syntax
+~~~~~~
+
+TODO: Overloading do for ``IOL`` (local vs too global ``-XRebindableSyntax``).
+
 Formalism
 ~~~~~~~~~
+
+TODO: probably ought to be moved to the implementation plan section:
 
 There's one thing I papered over on the formalism: in Core, ``case``
 is of the form ``case u as x of { <alternatives> }`` where ``x``
@@ -724,3 +743,5 @@ Implementation Plan
 - @aspiwack will implement the proposal
 - @aspiwack will implement and release a library exporting standard
   functions and types for linearly typed programs.
+
+TODO: stuff on core
