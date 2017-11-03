@@ -112,7 +112,7 @@ With linear types, we can write an interface to ``malloc`` and
 
   malloc :: Storable a => a ->. (Ptr a ->. Unrestricted b) ->. Unrestricted b
   read :: Storable a => Ptr a ->. (Ptr a, a)
-  free :: a
+  free :: a ->. ()
 
 This interface is safe in the sense that users of this interface get
 two strong static guarantees:
@@ -131,23 +131,29 @@ high-performance scientific computing clusters, etc). Correctly
 tracking the lifecycle of I/O resources has been a vexing issue for
 many network services. Creating a variant of the BSD socket API that
 statically guarantees ordering constraints between API calls becomes
-possible without the overhead of heavyweight encodings based e.g. on
+possible without the overhead of heavyweight encodings based *e.g.* on
 parameterized monads.
 
 ::
+  -- We need an variant of the IO monad where actions can have a
+  -- multiplicity
+  data IOL p a
+  returnL :: a:p -> IOL p a
+  bindL :: IOL p a ->. (a:p -> IOL q b) ->. IOL q b
 
+  -- Definition of sockets
   data State = Unbound | Bound | Listening | Connected
   data Socket (s :: State)
   data SocketAddress
 
-  socket :: IO '1 (Socket Unbound)
-  bind :: Socket Unbound ->. SocketAddress -> IO '1 (Socket Bound)
-  listen :: Socket Bound->. IO '1 (Socket Listening)
-  accept :: Socket Listening ->. IO '1 (Socket Listening, Socket Connected)
-  connect :: Socket Unbound ->. SocketAddress -> IO '1 (Socket Connected)
-  send :: Socket Connected ->. ByteString -> IO '1 (Socket Connected, Unrestricted Int)
-  receive :: Socket Connected -> IO '1 (Socket Connected, Unrestricted ByteString)
-  close :: ∀s. Socket s -> IO 'U ()
+  socket :: IOL '1 (Socket Unbound)
+  bind :: Socket Unbound ->. SocketAddress -> IOL '1 (Socket Bound)
+  listen :: Socket Bound->. IOL '1 (Socket Listening)
+  accept :: Socket Listening ->. IOL '1 (Socket Listening, Socket Connected)
+  connect :: Socket Unbound ->. SocketAddress -> IOL '1 (Socket Connected)
+  send :: Socket Connected ->. ByteString -> IOL '1 (Socket Connected, Unrestricted Int)
+  receive :: Socket Connected -> IOL '1 (Socket Connected, Unrestricted ByteString)
+  close :: ∀s. Socket s -> IOL 'U ()
 
 The `paper <https://arxiv.org/abs/1710.09756>`_ mentions other use
 cases as well, such as efficient and safe data serialization as well
