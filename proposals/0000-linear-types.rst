@@ -135,25 +135,24 @@ possible without the overhead of heavyweight encodings based *e.g.* on
 parameterized monads.
 
 ::
-  -- We need an variant of the IO monad where actions can have a
-  -- multiplicity
-  data IOL p a
-  returnL :: a:p -> IOL p a
-  bindL :: IOL p a ->. (a:p -> IOL q b) ->. IOL q b
+  -- We need an variant of the IO monad where actions are linear
+  data IOL a
+  returnL :: a ->. IOL a
+  bindL :: IOL a ->. (a -> IOL b) ->. IOL b
 
   -- Definition of sockets
   data State = Unbound | Bound | Listening | Connected
   data Socket (s :: State)
   data SocketAddress
 
-  socket :: IOL '1 (Socket Unbound)
-  bind :: Socket Unbound ->. SocketAddress -> IOL '1 (Socket Bound)
-  listen :: Socket Bound->. IOL '1 (Socket Listening)
-  accept :: Socket Listening ->. IOL '1 (Socket Listening, Socket Connected)
-  connect :: Socket Unbound ->. SocketAddress -> IOL '1 (Socket Connected)
-  send :: Socket Connected ->. ByteString -> IOL '1 (Socket Connected, Unrestricted Int)
-  receive :: Socket Connected -> IOL '1 (Socket Connected, Unrestricted ByteString)
-  close :: ∀s. Socket s -> IOL 'U ()
+  socket :: IOL (Socket Unbound)
+  bind :: Socket Unbound ->. SocketAddress -> IOL (Socket Bound)
+  listen :: Socket Bound->. IOL (Socket Listening)
+  accept :: Socket Listening ->. IOL (Socket Listening, Socket Connected)
+  connect :: Socket Unbound ->. SocketAddress -> IOL (Socket Connected)
+  send :: Socket Connected ->. ByteString -> IOL (Socket Connected, Unrestricted Int)
+  receive :: Socket Connected -> IOL (Socket Connected, Unrestricted ByteString)
+  close :: ∀s. Socket s -> IOL ()
 
 The `paper <https://arxiv.org/abs/1710.09756>`_ mentions other use
 cases as well, such as efficient and safe data serialization as well
