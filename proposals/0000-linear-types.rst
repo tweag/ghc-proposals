@@ -138,7 +138,7 @@ parameterized monads.
   -- We need an variant of the IO monad where actions are linear
   data IOL a
   returnL :: a ->. IOL a
-  bindL :: IOL a ->. (a -> IOL b) ->. IOL b
+  bindL :: IOL a ->. (a ->. IOL b) ->. IOL b
 
   -- Definition of sockets
   data State = Unbound | Bound | Listening | Connected
