@@ -145,9 +145,19 @@ parameterized monads.
   data Socket (s :: State)
   data SocketAddress
 
+  -- When a (TCP) socket is created it is Unbound.
   socket :: IOL (Socket Unbound)
+  -- To bind a socket to a port we take an Unbound socket, and make it
+  -- Bound. The type of bindL will ensure that the socket is threaded
+  -- through the computation, so that the (Socket Unbound) is not
+  -- accessible: we cannot bind a socket twice.
   bind :: Socket Unbound ->. SocketAddress -> IOL (Socket Bound)
+  -- A socket must be bound to a port before we start listening
   listen :: Socket Bound->. IOL (Socket Listening)
+  -- A socket can accept multiple connection, therefore, the socket is
+  -- returned in the same state by accept. A second, bidirectional,
+  -- socket representing the connection is also returned. Both have to
+  -- be used in a single-threaded fashion.
   accept :: Socket Listening ->. IOL (Socket Listening, Socket Connected)
   connect :: Socket Unbound ->. SocketAddress -> IOL (Socket Connected)
   send :: Socket Connected ->. ByteString -> IOL (Socket Connected, Unrestricted Int)
