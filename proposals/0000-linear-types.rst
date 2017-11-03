@@ -240,14 +240,17 @@ indexed arrow.
   ::
 
     data Multiplicity
-      = One
+      = Zero
+      | One
       | Omega
       | Multiplicity :* Multiplicity
       | Multiplicity :+ Multiplicity
 
-  In the following, for conciseness, we write ``1`` for ``One`` and
-  ``U`` (ASCII) or ``ω`` (Unicode) for ``Omega``. Note: unification
-  of multiplicities will be performed up to the semiring laws.
+  In the following, for conciseness, we write ``0`` for ``Zero``,
+  ``1`` for ``One`` and ``U`` (ASCII) or ``ω`` (Unicode) for
+  ``Omega``. See the Formalism section below for the significance of
+  ``0``. Note: unification of multiplicities will be performed up to
+  the semiring laws.
 - The multiplicity annotated arrow, for polymorphism, is written ``a:p
   -> b`` (where ``a`` and ``b`` are types and ``p`` is a
   multiplicity). To avoid introducing a new notion of "mixfix"
@@ -332,64 +335,101 @@ such as:
 Formalism
 ~~~~~~~~~
 
-This section describes the changes required in Core.
+So far, we have considered only two multiplicities ``1`` and
+``ω``. But the metatheory works with any so-called
+sup-semi-lattice-ordered semi-ring of multiplicities. That is: there
+is a 0, a 1, a sum and a product with the usual distributivity laws, a
+(computable) order compatible with the sum and product, such that each
+pair of multiplicities has a (computable) join. Even if there is only
+three multiplicities in this proposal, the proposal is structured to
+allow future extensions.
 
-For ease of type-checking, we add another multiplicity: ``0``
-representing definite absence of consumption of an argument (``0``
-has also been used by `Conor McBride
+Non of our examples use ``0``, however, ``0`` turns out to be useful
+for implementation of type-checking. Additionally, ``0`` has been used
+by `Conor McBride
 <https://link.springer.com/chapter/10.1007/978-3-319-30936-1_12>`_ to
-handle dependent types, which may matter for Dependent Haskell).
+handle dependent types, which may matter for Dependent Haskell). In
+both case, the use of ``0`` could be seen as an internal use, but
+there is no real reason to deny access to the programmer. Hence it is
+included in the syntax.
 
-The only requirement on multiplicities is that they form a
-sup-semi-lattice-ordered semi-ring. That is: there is a sum and a
-product with the usual distributivity laws, a (computable) order
-compatible with the sum and product, such that each pair of
-multiplicities has a (computable) join. Even if there is only three
-multiplicities in this proposal, the proposal is structured to allow
-future extensions.
+Here is the definition of sum, product and order for this proposal's
+multiplicities (in Haskell pseudo-syntax):
 
-Variables are added and multiplied symbolically. Therefore
-multiplicity expressions are multi-variate polynomials in the
-multiplicity semi-ring.
+::
+   0 + x = x
+   x + 0 = x
+   _ + _ = ω
 
-In Core, every variable is labelled, with its multiplicity (just like
-it is with its type prior to this proposal). This multiplicity is used
-to infer the multiplicity in the type of functions.
+   0 * _ = 0
+   _ * 0 = 0
+   1 * x = x
+   x * 1 = 1
+   ω * ω = ω
 
-In order to cope with the fact that
+   _ ⩽ ω = True
+   x ⩽ y = x == y
+
+Every variable in the environment is annotated with its multiplicity,
+which constrains how it can be used. A variable usage is said to be
+multiplicity ``p`` in a term ``u`` if:
+
+- ``p=0`` and ``x`` is not free in ``u``
+- ``p=1`` and ``u = x``
+- ``p=p1+q*p2`` `` and ``u = u1 u2`` with ``u1 :: a:q -> b`` and the
+  usage of ``x`` in ``u1`` is ``p1``, and in ``u2`` is ``p2``
+- ``u = λy. v`` and the usage of ``x`` in ``v`` is ``p``.
+
+A variable's usage is correct if it is smaller than or equal to the
+multiplicity annotation of the variable. Incorrect usage results in a
+type error.
+
+The multiplicity of a variable introduced by a λ-abstraction is taken
+from the surrounding typing information (typically a type annotation
+on an equation). For instance
 
 ::
 
-  fst :: (a, b) -> a
-  fst (a, _) = a
+  foo :: A:p -> B
+  foo x = …  -- x has multiplicity p
 
-is well-typed but
+The above takes care of the pure λ-calculus part of Haskell. We also
+need to consider ``let`` and ``case``.
+
+A ``let`` binding is considered to have an implicit multiplicity
+annotation (the annotation is inferred). The variables introduced by a
+``let`` bindings with annotation ``p`` all have multiplicity
+``p``. And the usage of ``x`` in ``let_p {y1 = u1; … ;yn = un} in v``
+is ``p*q1 + … + p*qn + q`` where the usage of ``x`` in ``ui`` is
+``qi`` and in ``v`` is ``q``.
+
+If a let has recursive binders, then ``p`` must be ``ω``.
+
+A ``case`` expression has an implicity multiplicity annotation, like
+``let`` binding. It if often inferred from the type annotation of an
+equation. The usage of ``x`` in ``case_p u of { … }`` where the usage
+of ``x`` in ``u`` is ``q`` is ``p*q`` plus the *join* of the usage of
+``x`` in each branch.
+
+The multiplicity annotation of variables introduce by a pattern depend
+on the constructor and on the implicit annotation of the
+``case``. Specifically in ``case_p u of {…; C x1 … xn -> …; …}`` Where ``C :: a1:q1 -> … an:qn -> A``,
+Then ``xi`` has multiplicity annotation ``p*qi``. For instance
 
 ::
 
-  fst :: (a, b) ->. a
-  fst (a, _) = a
+  bar :: (a,b):p -> c
+  bar (x,y) = … -- Since (,) :: a ->. b ->. (a,b), x and y have
+                -- multiplicity p
 
-isn't, ``case`` expressions are annotated with a multiplicity as
-well. This multiplicity scales the multiplicity of constructors'
-fields. The latter example is elaborated into a ``case_1`` so the
-``_`` pattern is linear, which is prohibited, in the former we have a
-``case_ω`` so the multiplicity of both fields are scaled by ``ω`` (in
-particular ``_`` is an unrestricted pattern) and the expression
-typechecks.
+There are unresolved issue regarding inference (see Unresolved
+questions below for more):
 
-This has one consequences: ``case_0`` cannot be allowed, as it would
-break the definition of ``0`` (it would force something which is, by
-definition, definitely not consumed, for instance, it would allow
-computing the length of a list with multiplicity ``0``). But we do
-want to accept ``case_p`` when ``p`` is a variable. Therefore me must
-take the convention that variables never stand for the ``0``
-multiplicity, and in particular that ``0`` is not a valid argument
-for a multiplicity application.
-
-Remark: ``let`` binders are decorated like ``case``, with the
-restriction that recursive ``let`` binders are necessarily decorated
-with ``ω``.
+- There is no account of multiplicity inference. A better
+  understanding would make inference more predictable.
+- For ``let`` bindings and ``case`` expressions which are not part of
+  an equation, we want to infer the multiplicity annotation. The
+  process for this is not yet defined.
 
 Effect and Interactions
 -----------------------
@@ -408,6 +448,12 @@ There is one known unpleasant interaction: with
 differrent typing rules when ``t`` and ``e`` have free linear
 variables. Therefore well-typed linearly typed programs can stop
 typing when ``-XRebindableSyntax`` is added.
+
+TODO: view patterns
+Unresolved: view patterns
+Unresolved: ``@`` patterns
+Remark: lazy pattern-matching is only allowed for patterns as
+multiplicity ``ω``.
 
 Costs and Drawbacks
 -------------------
@@ -601,17 +647,18 @@ Inference
   reasons, we want to infer unrestricted arrows conservatively, but
   experience shows that it can result in very surprising type errors.
 
-- In Core, we case is indexed by a multiplicity: ``case_p`` (and
-  similarly ``let_p``). In the surface language, we can deduce the
-  multiplicity in equations when their is a type annotation.
+- In the formalism, case expressions are indexed by a multiplicity:
+  ``case_p`` (and similarly ``let_p``). In the surface language, we
+  can deduce the multiplicity in equations when their is a type
+  annotation.
 
   ::
 
     fst :: (a,b) -> a
-    fst (a,_) = a    -- this is elaborated as a case_ω
+    fst (a,_) = a    -- this is inferred as a case_ω
 
     swap :: (a,b) ->. (b,a)
-    swap (a,b) = (b,a)   -- this is elaborated as a case_1
+    swap (a,b) = (b,a)   -- this is inferred as a case_1
 
   But what of explicit ``case`` and ``let`` in the surface language? We
   can annotate them with a multiplicity, but it is generally clear from
