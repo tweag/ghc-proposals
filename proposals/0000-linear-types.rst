@@ -237,8 +237,11 @@ indexed arrow.
   Note: unification of multiplicities will be performed up to the
   semiring laws. In the following, for conciseness, we write ``1`` for
   ``One`` and ``U`` (ASCII) or ``ω`` (Unicode) for ``Omega``.
-- The multiplicity annotated arrow is written ``a:p -> b``. The type
-  constructor is ``(:p ->)`` for each multiplicity ``p``.
+- The multiplicity annotated arrow, for polymorphism, is written ``a:p
+  -> b`` (where ``a`` and ``b`` are types and ``p`` is a
+  -multiplicity). To avoid introducing a new notion of "mixfix"
+  -operators, we introduce a familly of (infix) type constructors:
+  -``(:p ->)`` for each multiplicity ``p``.
 
 The linear and unrestricted arrows are aliases:
 
