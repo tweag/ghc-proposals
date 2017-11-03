@@ -206,7 +206,7 @@ polymorphic functions may have variable multiplicity, *e.g.*
 
 without polymorphism we would need two implementations of `map`. With
 the exact same code: one for ``p=1`` and one for ``p=ω``. Function
-composition is even worse: it takes two multiplicity parameters hence
+composition is even worse: it takes two multiplicity parameters, hence,
 would require four identical implementations:
 
 ::
