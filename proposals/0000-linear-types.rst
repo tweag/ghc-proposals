@@ -305,7 +305,7 @@ Base
 ~~~~
 
 Because linear functions only strengthen the contract of unrestricted
-function, a number of functions of ``base`` can get a more precise
+functions, a number of functions of ``base`` can get a more precise
 type. However, for pedagogical reason, to prevent linear types from
 interfering with newcomers' understanding the ``Prelude``, this
 proposal does not modify ``base``. Instead we will release a library
