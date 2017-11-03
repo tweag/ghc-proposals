@@ -250,9 +250,9 @@ indexed arrow.
   of multiplicities will be performed up to the semiring laws.
 - The multiplicity annotated arrow, for polymorphism, is written ``a:p
   -> b`` (where ``a`` and ``b`` are types and ``p`` is a
-  -multiplicity). To avoid introducing a new notion of "mixfix"
-  -operators, we introduce a familly of (infix) type constructors:
-  -``(:p ->)`` for each multiplicity ``p``.
+  multiplicity). To avoid introducing a new notion of "mixfix"
+  operators, we introduce a familly of (infix) type constructors:
+  ``(:p ->)`` for each multiplicity ``p``.
 
 The linear and unrestricted arrows are aliases:
 
