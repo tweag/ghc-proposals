@@ -337,6 +337,17 @@ such as:
    data Unrestricted a where
      Unrestricted :: a -> Unrestricted a
 
+At any rate, any library changes are out-of-scope for this proposal.
+Indeed, users are free to define their own alternative linear types
+enabled variant of the `Prelude` and even the rest of `base`. To the
+extent that these alternative preludes just reexport data type
+definitions while changing only the types of functions, these preludes
+will not contribute to splintering the ecosystem any more than the
+myriad existing alternative preludes do.
+
+The only function which will need to change is ``($)`` because its
+typing rules is built in the type checker.
+
 Formalism
 ~~~~~~~~~
 
