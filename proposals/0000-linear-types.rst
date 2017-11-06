@@ -752,7 +752,7 @@ Core
 In Core, ``case`` is of the form ``case u as x of { <alternatives> }``
 where ``x`` represents the head normal form of ``u``. It is used by
 the compiler in some Core to Core passes. It is also how default
-alternative is a case are implemented:
+alternatives of a case are implemented:
 
 ::
 
@@ -773,7 +773,7 @@ could define a function ``a ->. (a,a)`` generically with this).
 ::
   case_1 o as y of { Just x -> Just (x,y) }
 
-So we need a simple (Core needs to stay fairly simple) story for the
+So we need a simple story (Core needs to stay fairly simple) for the
 ``as`` clause of linear cases.
 
 The easiest thing to do would be to type ``case_p u as y of { … }`` as
@@ -790,9 +790,9 @@ It is not known at this point whether the simpler typing rule would be
 an obstacle or whether it is worth it to have a more fine-grained
 typing.
 
-Solving this will has user-facing implications, in particular regarding
+Solving this will have user-facing implications, in particular regarding
 which view patterns and ``@``-patterns are available in linear
-function.
+functions.
 
 Implementation Plan
 -------------------
