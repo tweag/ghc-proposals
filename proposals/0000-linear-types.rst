@@ -503,18 +503,39 @@ Give an estimate on development and maintenance costs. List how this
 effects learnability of the language for novice users. Define and list
 any remaining drawbacks that cannot be resolved.
 
+Learnability
+~~~~~~~~~~~~
+
 This proposal tries hard to make the changes invisible to newcomers,
 however, if many libraries start adopting it, the new function types
-will appear in APIs. They can be safely ignore, but they can still be
-considered distracting.
+will appear in APIs. They can often be safely ignored, but they can
+still be considered distracting.
 
-TODO: the arrow type constructor is used very often in GHC's internal,
-so there are many place which need to be handle linearity. It's often
-straightforward, but still a possible source of mistakes
-TODO: modifies core (modification not very deep, but every
-core-to-core pass must now be careful about linearity)
-TODO: unification modulo AC is not trivial (though we probably
-actually need a fraction of this). Some care required.
+Development and maintenance
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The arrow type constructor is constructed and destructed a lot in
+GHC's internal. So there are many place where we have to handle
+multiplicities. It is most often straightforward as it consists in
+getting a multiplicity variable and pass it to a
+function. Nevertheless, it is possible to get it wrong. And type
+checker developers will have to be aware of multiplicities to modify
+most aspects of type checking.
+
+Linear types also affect Core: Core must handle linear types in order
+to ensure that core-to-core passes do not break the linearity
+guarantees. The flip side is that all core-to-core passes must make
+sure that they do not break linearity. It is possible that some of the
+pre-linear-type passes actually do break linearity in some cases (this
+has not been acertained, yet).
+
+Unification of multiplicity expressions (as for for instance in the
+type of ``(.)`` above) requires some flavour of unification module
+associativity and commutativity (AC). Unification modulo AC is
+well-understood an relatively easy to implement. But would still be a
+non-trivial addition to the type-checker. We may decide that a
+simplified fragment is better suited for our use-case that the full
+generality of AC.
 
 
 Alternatives
