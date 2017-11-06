@@ -517,7 +517,7 @@ Development and maintenance
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The arrow type constructor is constructed and destructed a lot in
-GHC's internal. So there are many place where we have to handle
+GHC's internals. So there are many places where we have to handle
 multiplicities. It is most often straightforward as it consists in
 getting a multiplicity variable and pass it to a
 function. Nevertheless, it is possible to get it wrong. And type
