@@ -732,18 +732,25 @@ Inference
 Syntax
 ~~~~~~
 
-TODO: Overloading do for ``IOL`` (local vs too global ``-XRebindableSyntax``).
+Linear monads, like ``IOL`` in the socket motivating example will
+require the ``do`` notation to feel native and be comfortable to
+use. There is a facility to do this ``-XRebindableSyntax`` but,
+besides the problem with ``itThenElse`` mentionned above, this has a
+much too coarse grain behaviour: realistically, the same file will
+want to mention regular monads and linear monads (there is also
+another useful type of monads where multiplicity can change), but
+``-XRebindableSyntax`` changes the meaning of ``do`` globally. A
+solution would be to have a locally-rebindable ``do`` syntax such as
+is attempted in `this proposal
+<https://github.com/ghc-proposals/ghc-proposals/pull/78>`_.
 
-Formalism
-~~~~~~~~~
+Core
+~~~~
 
-TODO: probably ought to be moved to the implementation plan section:
-
-There's one thing I papered over on the formalism: in Core, ``case``
-is of the form ``case u as x of { <alternatives> }`` where ``x``
-represents the head normal form of ``u``. It is a widely use tool in
-Core to Core passes. It is in particular used to implement the default
-alternative is a case:
+In Core, ``case`` is of the form ``case u as x of { <alternatives> }``
+where ``x`` represents the head normal form of ``u``. It is used by
+the compiler in some Core to Core passes. It is also how default
+alternative is a case are implemented:
 
 ::
 
@@ -755,7 +762,7 @@ is elaborated into
 
 ::
 
-  \f o -> case o as y of { Just x -> Just (f x) ; WILDCARD -> y }
+  \f o -> case_ω o as y of { Just x -> Just (f x) ; WILDCARD -> y }
 
 But it is not obvious what to do for linear cases. The following is a
 linearity violation as ``y`` in a sense contains ``x`` (basically, you
@@ -767,21 +774,27 @@ could define a function ``a ->. (a,a)`` generically with this).
 So we need a simple (Core needs to stay fairly simple) story for the
 ``as`` clause of linear cases.
 
-The easiest thing to do would be to mark ``y`` as dead for linear
-cases, and make sure it stays dead throughout the optimiser. But this
-is not reasonable: it would prevent default cases, which is probably a
-bad idea, and anyway not something we can ensure if we have nested
-patterns.
+The easiest thing to do would be to type ``case_p u as y of { … }`` as
+``let_p y = u in case y of { … }``. But this may not be a good idea:
+it would prevent default cases, or legitimate patterns such as
+``x@(Just _)`` from being considered linear. It may also make some
+compiler passes harder than they ought to.
 
-Solving this will also help understand how to handle linear view
-patterns, the status of which is also unclear.
+After all, there is a transformation for ``x@(Just _) -> u`` which
+makes is a linear program: ``Just y -> let_1 x = Just y in u``. And
+the latter program has precisely the same behaviour.
+
+It is not known at this point whether the simpler typing rule would be
+an obstacle or whether it is worth it to have a more fine-grained
+typing.
+
+Solving this will has user-facing implications, in particular regarding
+which view patterns and ``@``-patterns are available in linear
+function.
 
 Implementation Plan
 -------------------
-(Optional) If accepted who will implement the change? Which other ressources and prerequisites are required for implementation?
 
 - @aspiwack will implement the proposal
 - @aspiwack will implement and release a library exporting standard
   functions and types for linearly typed programs.
-
-TODO: stuff on core
