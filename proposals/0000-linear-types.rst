@@ -457,35 +457,43 @@ API exports linear types, they are easy to ignore: just imagine that
 the arrows are regular arrows, it will work as expected.
 
 Linear data types are just regular Haskell type, which means its cheap
-to get interact with existing libraries.
+to interact with existing libraries. That is, unless there are linear
+arrows in argument position. In which case, attempt to use a
+non-linear function will raise a linear-type error. The motivating
+examples are all like this: they are libraries which require linear
+types to work.
 
-There is one known unpleasant interaction: with
-``-XRebindableSyntax``, ``if u then t else e`` is interpreted as
-``ifThenElse u t e``. Unfortunately, these two construct have
-differrent typing rules when ``t`` and ``e`` have free linear
-variables. Therefore well-typed linearly typed programs can stop
-typing when ``-XRebindableSyntax`` is added.
+There is an unpleasant interaction with ``-XRebindableSyntax``: ``if u
+then t else e`` is interpreted as ``ifThenElse u t e``. Unfortunately,
+these two construct have differrent typing rules when ``t`` and ``e``
+have free linear variables. Therefore well-typed linearly typed
+programs can stop typing when ``-XRebindableSyntax`` is added.
 
-TODO: view patterns
-Unresolved: view patterns
-Unresolved: ``@`` patterns
-Remark: lazy pattern-matching is only allowed for patterns as
-multiplicity ``ω``.
-TODO: when using a library with linear types and you don't: you won't
-be able to use functions which take linear functions as arguments, but
-first-order functions with linear types will work silently. When using
-a function which require a linear type, you will get an error from ``-XLinearTypes``.
-
-TODO (better phrasing)
-There is a an issue that defining newtypes such as
+The meta-theory of linear types in a lazy language fail if we allow:
 
 ::
 
   newtype Unrestricted' a where
     Unrestricted' :: a -> Unrestricted' a
 
-Because of laziness which could cause linear values not to be
-consumed.
+Intuitively, this is because forcing a value ``v :: Unrestricted a``
+has the consequence of consuming all the resources in the closure of
+``v`` making it safe to use the value many times or not at all. But
+newtypes convert ``case`` into a cast, hence the closure is never
+consumed. So ``newtype`` must not accept non-linear arrow with
+``-XLinearTypes``. This is not backward compatible.
+
+Lazy pattern-matching is only allowed for unrestricted (multiplicity
+``ω``) patterns: lazy patterns are defined in terms of projections
+which only exist in the unrestricted case.
+
+Unresolved questions:
+- It is unknown at this point whether view patterns can be linear
+- It is unknown at this point whether ``@`` pattern of the form ``x@C
+  _ _`` can be considered linear (it is as much a practical question
+  of wether there is a reasonable way to implemet such a check as a
+  theoretical question of whether we can justify it).
+
 
 Costs and Drawbacks
 -------------------
