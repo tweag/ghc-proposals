@@ -321,7 +321,7 @@ data types, in ``base`` are linear by default to reuse the same types,
 hence remain compatible with base.
 
 The only function which will need to change is ``($)`` because its
-typing rules is built in the type checker. Ignoring the details about
+typing rule is built in the type checker. Ignoring the details about
 levity and higher-rank polymorphism in the typing rule, the type
 ``($)`` will be:
 
@@ -345,9 +345,6 @@ extent that these alternative preludes just reexport data type
 definitions while changing only the types of functions, these preludes
 will not contribute to splintering the ecosystem any more than the
 myriad existing alternative preludes do.
-
-The only function which will need to change is ``($)`` because its
-typing rules is built in the type checker.
 
 Formalism
 ~~~~~~~~~
