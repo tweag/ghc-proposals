@@ -256,7 +256,8 @@ indexed arrow.
   multiplicity). To avoid introducing a new notion of "mixfix"
   operators, we introduce a familly of (infix) type constructors:
   ``( :p->)`` for each multiplicity ``p``. This technically steals
-  syntax as ``(:)`` is a valid type operator. But this should not be a
+  syntax as ``(:)`` is a valid type operator under the discouraged
+  ``-XDataKinds`` syntax. But this should not be a
   problem in practice.
 
 The linear and unrestricted arrows are aliases:
