@@ -513,7 +513,27 @@ consumed. So ``newtype`` must not accept non-linear arrow with
 
 Lazy pattern-matching is only allowed for unrestricted (multiplicity
 ``ω``) patterns: lazy patterns are defined in terms of projections
-which only exist in the unrestricted case.
+which only exist in the unrestricted case. For instance
+
+::
+
+  swap' :: (a,b) ->. (b,a)
+  swap' ~(x,y) = (y,x)
+
+Means
+
+::
+  swap' :: (a,b) ->. (b,a)
+  swap' xy = (snd xy, fst xy)
+
+Which is not well-typed in particular since fst is not.
+
+::
+
+  fst :: (a,b) -> a -- resp. snd
+  fst (a,_) = a
+
+So ``swap'`` must be given the type ``(a,b) -> (b,a)``.
 
 Unresolved questions:
 - It is unknown at this point whether view patterns can be linear
