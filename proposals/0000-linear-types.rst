@@ -251,14 +251,14 @@ indexed arrow.
   ``Omega``. See the Formalism section below for the significance of
   ``0``. Note: unification of multiplicities will be performed up to
   the semiring laws.
-- The multiplicity annotated arrow, for polymorphism, is written ``a:p
-  -> b`` (where ``a`` and ``b`` are types and ``p`` is a
+- The multiplicity annotated arrow, for polymorphism, is written
+  ``a :p-> b`` (where ``a`` and ``b`` are types and ``p`` is a
   multiplicity). To avoid introducing a new notion of "mixfix"
   operators, we introduce a familly of (infix) type constructors:
-  ``( :p->)`` for each multiplicity ``p``. This technically steals
+  ``(:p->)`` for each multiplicity ``p``. This technically steals
   syntax as ``(:)`` is a valid type operator under the discouraged
-  ``-XDataKinds`` syntax. But this should not be a
-  problem in practice.
+  ``-XDataKinds`` syntax. But this should not be a problem in
+  practice.
 
 The linear and unrestricted arrows are aliases:
 
@@ -306,6 +306,12 @@ variables:
 
   f :: Foo2 ->. A
   f (Bar2 x y) = x  -- y is unrestricted, hence does not need to be consumed
+
+An exception to this rule is ``newtype`` declarations in GADT syntax:
+``newtype``-s must have only linear arguments (see Interactions
+below). For backward compatibility, we propose, to make unrestricted arrow
+``(->)`` in ``newtype``-s be interpreted as linear arrows, and create
+a new warning ``unrestricted-newtype`` triggered when this happens.
 
 Base
 ~~~~
@@ -507,7 +513,8 @@ these two construct have differrent typing rules when ``t`` and ``e``
 have free linear variables. Therefore well-typed linearly typed
 programs can stop typing when ``-XRebindableSyntax`` is added.
 
-The meta-theory of linear types in a lazy language fail if we allow:
+The meta-theory of linear types in a lazy language fail if we allow
+unrestricted ``newtype``-s:
 
 ::
 
@@ -519,7 +526,8 @@ has the consequence of consuming all the resources in the closure of
 ``v`` making it safe to use the value many times or not at all. But
 newtypes convert ``case`` into a cast, hence the closure is never
 consumed. So ``newtype`` must not accept non-linear arrow with
-``-XLinearTypes``. This is not backward compatible.
+``-XLinearTypes``. These are interpreted as linear ``newtype``-s and a
+warning is emitted (see Specification above).
 
 Lazy pattern-matching is only allowed for unrestricted (multiplicity
 ``ω``) patterns: lazy patterns are defined in terms of projections
