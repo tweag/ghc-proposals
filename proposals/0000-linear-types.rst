@@ -416,8 +416,8 @@ A ``let`` binding is considered to have an implicit multiplicity
 annotation (the annotation is inferred). The variables introduced by a
 ``let`` bindings with annotation ``p`` all have multiplicity
 ``p``. And the usage of ``x`` in ``let_p {y1 = u1; … ;yn = un} in v``
-is ``p*q1 + … + p*qn + q`` where the usage of ``x`` in ``ui`` is
-``qi`` and in ``v`` is ``q``.
+(where the ``yi`` are variables) is ``p*q1 + … + p*qn + q`` where the
+usage of ``x`` in ``ui`` is ``qi`` and in ``v`` is ``q``.
 
 If a let has recursive binders, then ``p`` must be ``ω``.
 
@@ -455,8 +455,9 @@ library could not be used with ``map`` from base. Which means that
 everybody would have to start caring about linearity. Worse: every use
 of ``map Just`` would now be untyped. Fortunately, this sort of
 opportunity is easily detected and the former definition of ``g`` is
-understood as the latter, well-typed, one. It means that it is always
-safe to turn a *first-order* regular arrow ``->`` into a linear ``->.``.
+understood as the latter, well-typed, one. It means that is not a
+breaking change to strengthen a *first-order* regular arrow ``->``
+into a linear ``->.`` in an interface.
 
 An important point to note is that ``case_0`` is meaningless: it makes
 it possible to create values dependending on a value which may not
