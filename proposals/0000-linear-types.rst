@@ -218,7 +218,7 @@ polymorphic functions may have variable multiplicity, *e.g.*
 
 ::
 
-  map :: (a:p -> b) -> [a]:p -> [b]
+  map :: (a :p-> b) -> [a] :p-> [b]
 
 without polymorphism we would need two implementations of `map`. With
 the exact same code: one for ``p=1`` and one for ``p=ω``. Function
@@ -227,7 +227,7 @@ would require four identical implementations:
 
 ::
 
-  (.) :: (b:p -> c) -> (a:q -> b) -> a:(p ':* q) -> c
+  (.) :: (b :p-> c) -> (a :q-> b) -> a :(p ':* q)-> c
 
 Syntax
 ~~~~~~
@@ -255,7 +255,7 @@ indexed arrow.
   -> b`` (where ``a`` and ``b`` are types and ``p`` is a
   multiplicity). To avoid introducing a new notion of "mixfix"
   operators, we introduce a familly of (infix) type constructors:
-  ``(:p ->)`` for each multiplicity ``p``. This technically steals
+  ``( :p->)`` for each multiplicity ``p``. This technically steals
   syntax as ``(:)`` is a valid type operator. But this should not be a
   problem in practice.
 
@@ -326,7 +326,7 @@ levity and higher-rank polymorphism in the typing rule, the type
 
 ::
 
-  ($) :: (a:p -> b) ⊸ a:p -> b
+  ($) :: (a :p-> b) ⊸ a :p-> b
 
 The precise content of the library is out of scope of this proposal,
 but it will also contain convenient types to work with linear types
@@ -392,7 +392,7 @@ multiplicity ``p`` in a term ``u`` if:
 
 - ``p=0`` and ``x`` is not free in ``u``
 - ``p=1`` and ``u = x``
-- ``p=p1+q*p2`` `` and ``u = u1 u2`` with ``u1 :: a:q -> b`` and the
+- ``p=p1+q*p2`` `` and ``u = u1 u2`` with ``u1 :: a :q-> b`` and the
   usage of ``x`` in ``u1`` is ``p1``, and in ``u2`` is ``p2``
 - ``u = λy. v`` and the usage of ``x`` in ``v`` is ``p``.
 
@@ -406,7 +406,7 @@ on an equation). For instance
 
 ::
 
-  foo :: A:p -> B
+  foo :: A :p-> B
   foo x = …  -- x has multiplicity p
 
 The above takes care of the pure λ-calculus part of Haskell. We also
@@ -429,12 +429,12 @@ of ``x`` in ``u`` is ``q`` is ``p*q`` plus the *join* of the usage of
 
 The multiplicity annotation of variables introduce by a pattern depend
 on the constructor and on the implicit annotation of the
-``case``. Specifically in ``case_p u of {…; C x1 … xn -> …; …}`` Where ``C :: a1:q1 -> … an:qn -> A``,
+``case``. Specifically in ``case_p u of {…; C x1 … xn -> …; …}`` Where ``C :: a1 :q1-> … an :qn-> A``,
 Then ``xi`` has multiplicity annotation ``p*qi``. For instance
 
 ::
 
-  bar :: (a,b):p -> c
+  bar :: (a,b) :p-> c
   bar (x,y) = … -- Since (,) :: a ->. b ->. (a,b), x and y have
                 -- multiplicity p
 
