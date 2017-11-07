@@ -321,10 +321,11 @@ functions, a number of functions of ``base`` can get a more precise
 type. However, for pedagogical reason, to prevent linear types from
 interfering with newcomers' understanding the ``Prelude``, this
 proposal does not modify ``base``. Instead we will release a library
-exposing the stronger types for ``base`` functions. This library will
-not redefine any type, and instead takes advantage of the fact that
-data types, in ``base`` are linear by default to reuse the same types,
-hence remain compatible with base.
+exposing the stronger types for ``base`` functions.
+
+This library will not redefine any type, and instead takes advantage
+of the fact that data types, in ``base`` are linear by default to
+reuse the same types, hence remain compatible with base.
 
 The only function which will need to change is ``($)`` because its
 typing rule is built in the type checker. Ignoring the details about
@@ -335,22 +336,17 @@ levity and higher-rank polymorphism in the typing rule, the type
 
   ($) :: (a :p-> b) ⊸ a :p-> b
 
-The precise content of the library is out of scope of this proposal,
-but it will also contain convenient types to work with linear types
-such as:
+The precise content of the library is out of scope of this proposal:
+future standardisation of library content is the competence of
+the CLC.  However the library will also contain convenient types to
+work with linear types, with the understanding that when the new types
+are standardised in ``base`` the library would re-export them rather
+than define them, such as:
 
 ::
 
    data Unrestricted a where
      Unrestricted :: a -> Unrestricted a
-
-At any rate, any library changes are out-of-scope for this proposal.
-Indeed, users are free to define their own alternative linear types
-enabled variant of the `Prelude` and even the rest of `base`. To the
-extent that these alternative preludes just reexport data type
-definitions while changing only the types of functions, these preludes
-will not contribute to splintering the ecosystem any more than the
-myriad existing alternative preludes do.
 
 Formalism
 ~~~~~~~~~
