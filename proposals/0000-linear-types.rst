@@ -428,7 +428,7 @@ equation. The usage of ``x`` in ``case_p u of { … }`` where the usage
 of ``x`` in ``u`` is ``q`` is ``p*q`` plus the *join* of the usage of
 ``x`` in each branch.
 
-The multiplicity annotation of variables introduce by a pattern depend
+The multiplicity annotation of variables introduced by a pattern depend
 on the constructor and on the implicit annotation of the
 ``case``. Specifically in ``case_p u of {…; C x1 … xn -> …; …}`` Where ``C :: a1 :q1-> … an :qn-> A``,
 Then ``xi`` has multiplicity annotation ``p*qi``. For instance
@@ -439,7 +439,9 @@ Then ``xi`` has multiplicity annotation ``p*qi``. For instance
   bar (x,y) = … -- Since (,) :: a ->. b ->. (a,b), x and y have
                 -- multiplicity p
 
-The type ``A->.B`` is a strengthening of ``A->B``, but the type checker doesn't do subtyping. It relies on polymorphism instead. However, following the definition above, note that
+The type ``A->.B`` is a strengthening of ``A->B``, but the type
+checker doesn't do subtyping. It relies on polymorphism
+instead. However, following the definition above, note that
 
 ::
 
@@ -457,7 +459,13 @@ opportunity is easily detected and the former definition of ``g`` is
 understood as the latter, well-typed, one. It means that it is always
 safe to turn a *first-order* regular arrow ``->`` into a linear ``->.``.
 
-An important point to note is that ``case_0`` is meaningless: it makes it possible to create values dependending on a value which may not exist. For instance the length of a list argument with multiplicity ``0``. Because we want to allow ``case_p`` for a variable ``p``, This creates a small complication where variables never stand for ``0``, in particular type-application of multiplicity variables must prohibit ``0``.
+An important point to note is that ``case_0`` is meaningless: it makes
+it possible to create values dependending on a value which may not
+exist. For instance the length of a list argument with multiplicity
+``0``. Because we want to allow ``case_p`` for a variable ``p``, This
+creates a small complication where variables never stand for ``0``, in
+particular type-application of multiplicity variables must prohibit
+``0``.
 
 There are unresolved issue regarding inference (see Unresolved
 questions below for a more precise description):
