@@ -360,12 +360,12 @@ pair of multiplicities has a (computable) join. Even if there is only
 three multiplicities in this proposal, the proposal is structured to
 allow future extensions.
 
-Non of our examples use ``0``, however, ``0`` turns out to be useful
+None of our examples use ``0``, however, ``0`` turns out to be useful
 for implementation of type-checking. Additionally, ``0`` has been used
 by `Conor McBride
 <https://link.springer.com/chapter/10.1007/978-3-319-30936-1_12>`_ to
 handle dependent types, which may matter for Dependent Haskell). In
-both case, the use of ``0`` could be seen as an internal use, but
+both cases, the use of ``0`` could be seen as an internal use, but
 there is no real reason to deny access to the programmer. Hence it is
 included in the syntax.
 
@@ -450,7 +450,7 @@ instead. However, following the definition above, note that
   g = f  -- should not be well-typed
   g x = f x  -- is well-typed
 
-This would be rather unfortunate: for instance a linear function in a
+It would be unfortunate if this rule was actually enforced: for instance a linear function in a
 library could not be used with ``map`` from base. Which means that
 everybody would have to start caring about linearity. Worse: every use
 of ``map Just`` would now be untyped. Fortunately, this sort of
@@ -461,7 +461,7 @@ into a linear ``->.`` in an interface.
 
 An important point to note is that ``case_0`` is meaningless: it makes
 it possible to create values dependending on a value which may not
-exist. For instance the length of a list argument with multiplicity
+exist at runtime. For instance the length of a list argument with multiplicity
 ``0``.
 
 ::
@@ -480,7 +480,7 @@ creates a small complication where variables never stand for ``0``, in
 particular type-application of multiplicity variables must prohibit
 ``0``.
 
-There are unresolved issue regarding inference (see Unresolved
+There are unresolved issues regarding inference (see Unresolved
 questions below for a more precise description):
 
 - There is no account of multiplicity inference. A better
@@ -497,7 +497,7 @@ who don't want to use it, or don't know of linear types. Even if an
 API exports linear types, they are easy to ignore: just imagine that
 the arrows are regular arrows, it will work as expected.
 
-Linear data types are just regular Haskell type, which means its cheap
+Linear data types are just regular Haskell types, which means it is cheap
 to interact with existing libraries. That is, unless there are linear
 arrows in argument position. In which case, attempt to use a
 non-linear function will raise a linear-type error. The motivating
@@ -506,11 +506,11 @@ types to work.
 
 There is an unpleasant interaction with ``-XRebindableSyntax``: ``if u
 then t else e`` is interpreted as ``ifThenElse u t e``. Unfortunately,
-these two construct have differrent typing rules when ``t`` and ``e``
+these two constructs have different typing rules when ``t`` and ``e``
 have free linear variables. Therefore well-typed linearly typed
 programs can stop typing when ``-XRebindableSyntax`` is added.
 
-The meta-theory of linear types in a lazy language fail if we allow
+The meta-theory of linear types in a lazy language fails if we allow
 unrestricted ``newtype``-s:
 
 ::
@@ -735,8 +735,8 @@ On the matter of dependent Haskell, to the best our knowledge, the only
 presentations of dependent types with linearity-in-kinds disallow
 linear types as arguments of dependent functions.
 
-Future work
-~~~~~~~~~~~
+Future extensions (not part of this proposal)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Something that hasn't been touched up by this proposal is the idea of
 declaring toplevel linear binders
