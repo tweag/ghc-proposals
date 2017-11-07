@@ -554,7 +554,7 @@ Unresolved questions:
 - It is unknown at this point whether view patterns can be linear
 - It is unknown at this point whether ``@`` pattern of the form ``x@C
   _ _`` can be considered linear (it is as much a practical question
-  of wether there is a reasonable way to implemet such a check as a
+  of whether there is a reasonable way to implemet such a check as a
   theoretical question of whether we can justify it).
 
 
