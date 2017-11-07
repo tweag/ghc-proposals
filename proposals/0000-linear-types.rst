@@ -462,7 +462,20 @@ safe to turn a *first-order* regular arrow ``->`` into a linear ``->.``.
 An important point to note is that ``case_0`` is meaningless: it makes
 it possible to create values dependending on a value which may not
 exist. For instance the length of a list argument with multiplicity
-``0``. Because we want to allow ``case_p`` for a variable ``p``, This
+``0``.
+
+::
+
+  -- Wrong!
+  badLength :: [a] :'0-> Int
+  badLength [] = 0
+  badLength (_:l) = 1 + badLength l
+
+  -- Not linear! But well-typed if the above is accepted
+  f :: [a] ->. (Int, [a])
+  f l = (badLength l, l)
+
+Because we want to allow ``case_p`` for a variable ``p``, This
 creates a small complication where variables never stand for ``0``, in
 particular type-application of multiplicity variables must prohibit
 ``0``.
