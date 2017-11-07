@@ -449,7 +449,13 @@ The type ``A->.B`` is a strengthening of ``A->B``, but the type checker doesn't 
   g = f  -- should not be well-typed
   g x = f x  -- is well-typed
 
-This would be rather unfortunate: for instance a linear function in a library could not be used with ``map`` from base. Which means that everybody would have to start caring about linearity. Worse: every use of ``map Just`` would now be untyped. Fortunately, this sort of opportunity is easily detected and the former definition of ``f`` is understood as the latter, well-typed, one. It means that it is always safe to turn a *first-order* arrow ``->`` into a ``->.``.
+This would be rather unfortunate: for instance a linear function in a
+library could not be used with ``map`` from base. Which means that
+everybody would have to start caring about linearity. Worse: every use
+of ``map Just`` would now be untyped. Fortunately, this sort of
+opportunity is easily detected and the former definition of ``g`` is
+understood as the latter, well-typed, one. It means that it is always
+safe to turn a *first-order* regular arrow ``->`` into a linear ``->.``.
 
 An important point to note is that ``case_0`` is meaningless: it makes it possible to create values dependending on a value which may not exist. For instance the length of a list argument with multiplicity ``0``. Because we want to allow ``case_p`` for a variable ``p``, This creates a small complication where variables never stand for ``0``, in particular type-application of multiplicity variables must prohibit ``0``.
 
