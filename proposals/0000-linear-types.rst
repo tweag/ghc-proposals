@@ -83,7 +83,7 @@ preserved.
 The two main benefits of this API are:
 
 - reads and writes on distinct arrays are not sequenced. This means
-  that the compiler is free to reorder them, e.g. as an optimisation.
+  that the compiler is free to reorder them, *e.g.* as an optimisation.
   We could go further and introduce `fork-join parallelism
   <https://en.wikipedia.org/wiki/Fork%E2%80%93join_model>`_ primitives
   where disjoint slices can be mutated in parallel, *e.g.* by
@@ -214,7 +214,7 @@ over whether a function is linear.
 
 A linear function is said to have multiplicity ``1`` while an
 unrestricted function is said to have multiplicity ``ω``. Multiplicity
-polymorphic functions may have variable multiplicity, *e.g.*
+polymorphic functions may have variable multiplicity (see also Syntax below), *e.g.*
 
 ::
 
@@ -280,8 +280,8 @@ Constructors of data types defined with the Haskell'98 syntax
 have linear function types, that is ``Bar :: A ->. B ->. Foo``. This
 is true in every module, including those without ``-XLinearTypes``
 turned on. This implies that most types in ``base`` (``Maybe``,
-``[]``, etc…) have linear constructors. We also make primivitive
-tuples ``(,)`` have linear constructors.
+``[]``, etc…) have linear constructors. We also make the constructor
+of primivitive tuples ``(,)`` linear in their arguments.
 
 With the GADT syntax, multiplicity of the arrows is honored:
 
@@ -308,8 +308,8 @@ variables:
   f (Bar2 x y) = x  -- y is unrestricted, hence does not need to be consumed
 
 An exception to this rule is ``newtype`` declarations in GADT syntax:
-``newtype``-s must have only linear arguments (see Interactions
-below). For backward compatibility, we propose, to make unrestricted arrow
+``newtype``-s' argument must be linear (see Interactions
+below). For backward compatibility, we propose, to make unrestricted arrows
 ``(->)`` in ``newtype``-s be interpreted as linear arrows, and create
 a new warning ``unrestricted-newtype`` triggered when this happens.
 
@@ -385,6 +385,10 @@ multiplicities (in Haskell pseudo-syntax):
 
    _ ⩽ ω = True
    x ⩽ y = x == y
+
+Note in particular that ``0 ≰ 1`` as arguments with multiplicity ``1``
+are consumed exactly once, which doesn't include not being consumed at
+all.
 
 Every variable in the environment is annotated with its multiplicity,
 which constrains how it can be used. A variable usage is said to be
