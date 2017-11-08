@@ -243,14 +243,18 @@ indexed arrow.
       = Zero
       | One
       | Omega
-      | Multiplicity :* Multiplicity
-      | Multiplicity :+ Multiplicity
+
+  In addition, two specially recognised type families:
+
+  ::
+    type family (:+) :: Multiplicity -> Multiplicity -> Multiplicity
+    type family (:*) :: Multiplicity -> Multiplicity -> Multiplicity
 
   In the following, for conciseness, we write ``0`` for ``Zero``,
   ``1`` for ``One`` and ``U`` (ASCII) or ``ω`` (Unicode) for
   ``Omega``. See the Formalism section below for the significance of
   ``0``. Note: unification of multiplicities will be performed up to
-  the semiring laws.
+  the semiring laws for ``(:+)`` and ``(:*)`` (see Specification).
 - The multiplicity annotated arrow, for polymorphism, is written
   ``a :p-> b`` (where ``a`` and ``b`` are types and ``p`` is a
   multiplicity). To avoid introducing a new notion of "mixfix"
