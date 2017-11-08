@@ -247,6 +247,7 @@ indexed arrow.
   In addition, two specially recognised type families:
 
   ::
+
     type family (:+) :: Multiplicity -> Multiplicity -> Multiplicity
     type family (:*) :: Multiplicity -> Multiplicity -> Multiplicity
 
