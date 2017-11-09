@@ -1,4 +1,4 @@
-.. proposal-number:: Leave blank. This will be filled in when the proposal is
+c.. proposal-number:: Leave blank. This will be filled in when the proposal is
                      accepted.
 
 .. trac-ticket:: Leave blank. This will eventually be filled with the Trac
@@ -688,8 +688,8 @@ In this case, we would have:
    map f [] = []
    map f (a:l) = f a : (map f l)
 
-In practice, under this situation, the type of ``map`` probably better
-written, in practice, as
+In practice, under this situation, the type of ``map`` is probably better
+written as
 
 ::
 
