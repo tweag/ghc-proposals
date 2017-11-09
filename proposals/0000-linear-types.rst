@@ -608,6 +608,38 @@ generality of AC.
 Alternatives
 ------------
 
+Syntax of multiplicity-parametric arrow
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The proposed mixfix ``a :p-> b`` syntax for the
+multiplicity-parametric arrow makes a potentially non-trivial addition
+to the parser. So does the proposed type constructor indexed by a
+multiplicity ``(:p->)``.
+
+A way to simplify the changes to the parser would be to have the type
+constructor be
+
+::
+
+  ``ARROW :: Multiplicity -> * -> * -- ignoring levitiy
+
+It would be very inconvenient to use a prefix notation for
+multiplicity parametric arrows: we wouldn't want the type of ``map``
+to read
+
+::
+
+  map :: ARROW 'U (ARROW p a b) (ARROW p [a] [b])
+
+So we introduce a binary type construction ``WithMult`` (or some
+operator syntax). It is a syntax error to use ``WithMult`` anywhere
+except to the left of an arrow. And ``WithMult a p -> b`` means
+``ARROW p a b``. So that the type of ``map`` becomes:
+
+::
+
+  map :: (a `WithMult` p -> b) -> [a] `WithMult` p -> [b]
+
 Subtyping instead of polymorphism
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
