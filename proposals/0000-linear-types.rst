@@ -286,7 +286,7 @@ have linear function types, that is ``Bar :: A ->. B ->. Foo``. This
 is true in every module, including those without ``-XLinearTypes``
 turned on. This implies that most types in ``base`` (``Maybe``,
 ``[]``, etc…) have linear constructors. We also make the constructor
-of primivitive tuples ``(,)`` linear in their arguments.
+of primitive tuples ``(,)`` linear in their arguments.
 
 With the GADT syntax, multiplicity of the arrows is honored:
 
