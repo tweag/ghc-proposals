@@ -641,6 +641,53 @@ this program to the well-typed η-expansion
   g :: A -> B
   g x = f x
 
+No restriction on multiplicity variables
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Instead of restricting variables and type applications so that
+``case_p`` is allowed for a variable ``p``, we can allow arbitrary
+variables and disallow, in particular, ``case_p``.
+
+In this case, we would have:
+
+::
+
+   map :: (a :(p+1)-> b) -> [a] :(p+1)-> [b]
+   map f [] = []
+   map f (a:l) = f a : (map f l)
+
+In practice, under this situation, the type of ``map`` probably better
+written, in practice, as
+
+::
+
+   map :: forall p a b q. (p ~ q + 1) => (a :p-> b) -> [a] :p-> [b]
+
+In order to play more nicely, for instance, with explicit type
+applications.
+
+A benefit is that higher-order functions with no ``case`` such as
+``(.)`` are now capable of taking functions with multiplicity ``0`` as
+argument.
+
+A variation on the same idea is to introduce a constraint
+
+::
+
+  CaseCompatible :: Multiplicity -> Constraint
+
+which is discharged automatically by the compiler. Variables
+implementing this are acceptable in ``case``. So ``map`` would be of
+type.
+
+::
+
+  map :: (CaseCompatible p) => (a :p-> b) -> [a] :p-> [b]
+
+This is harder to implement than just reusing ``p~q+1`` as a
+constraint, but is more resistant to having more multiplicities than
+just 0, 1, and ω, as is currently proposed.
+
 No annotation on case
 ~~~~~~~~~~~~~~~~~~~~~
 
